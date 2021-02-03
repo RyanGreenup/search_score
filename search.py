@@ -90,6 +90,8 @@ def similarity(u, v):
 
 create_vec_stdin(doc_vec)
 create_vec_string(term_vec, sys.argv[1])
-print(sum(doc_vec))
-print(sum(term_vec))
 print(similarity(doc_vec, term_vec))
+
+if DEBUG:
+    print(sum(doc_vec))
+    print(sum(term_vec))
