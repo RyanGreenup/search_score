@@ -7,19 +7,19 @@ import re
 import numpy as np
 from scipy.spatial import distance
 
+
 DEBUG = False
 ARRAY_SIZE = 3*10**6
 doc_vec  = np.zeros(ARRAY_SIZE)+(1e-20)
 term_vec = np.zeros(ARRAY_SIZE)+(1e-20)
 
 
-N = 10**6
 def norm1alize(vec):
-    vec += 1e-12 # HACK Slightly faster to inc, also -12 seems to
+    ## vec += 1e-12 # HACK Slightly faster to inc, also -12 seems to
                  #      perform the best timewise
-    vec *= 1/sum(vec)
+    vec_sum = sum(vec)
+    vec *= (1/vec_sum)
     return vec
-
 
 
 
