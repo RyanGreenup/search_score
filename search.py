@@ -12,9 +12,10 @@ doc_vec  = np.zeros(ARRAY_SIZE)+(1e-20)
 term_vec = np.zeros(ARRAY_SIZE)+(1e-20)
 
 
-N = 10**7
+N = 10**6
 def norm1alize(vec):
-    vec += 1e-20  # HACK Slightly faster
+    vec += 1e-12 # HACK Slightly faster to inc, also -12 seems to
+                 #      perform the best timewise
     vec *= 1/sum(vec)
     return vec
 
@@ -24,23 +25,6 @@ def norm1alize_slower(vec):
         if vec[i] != 0:
             vec[i] *= (1/vec_sum)
 
-
-testvec = (np.zeros(N)) 
-testvec[3] += 1
-start = time.time()
-norm1alize(testvec)
-stop = time.time()
-add_some = stop - start
-
-
-testvec = (np.zeros(N)) 
-testvec[3] += 1
-start = time.time()
-norm1alize_slower(testvec)
-stop = time.time()
-loop_over = stop - start
-
-print(add_some, loop_over)
 
 
 
@@ -101,10 +85,12 @@ def create_vec_string(vec, search_string):
     return vec
 
 def similarity(u, v):
-    return -distance.cosine(doc_vec, term_vec)
+    u = norm1alize(u)  # This doesn't copy them, whic is good, save memory
+    v = norm1alize(v)
+    return 1-distance.cosine(u, v)
 
-    
-distance.cosine([1,1, 1], [20, 20, 10])
+distance.cosine(np.array([1.0, 1, 1]), np.array([20.0, 20, 10]))
+distance.cosine(np.array([1.0, 1, 1]), np.array([2, 2, 1]))
 
 create_vec_stdin(doc_vec)
 create_vec_string(term_vec, sys.argv[1])
