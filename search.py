@@ -7,6 +7,7 @@ import re
 import numpy as np
 from scipy.spatial import distance
 
+DEBUG = False
 ARRAY_SIZE = 3*10**6
 doc_vec  = np.zeros(ARRAY_SIZE)+(1e-20)
 term_vec = np.zeros(ARRAY_SIZE)+(1e-20)
@@ -48,11 +49,13 @@ def create_vec_stdin(vec):
                 left = right
                 right = char
                 combination = left+right
-                print(combination)
                 # 4*^150C_4 < 10^8, 100 MB memory though, jee
                 combination_int = hash_it(combination)
-                print(combination_int)
                 vec[combination_int] += 1
+
+                if DEBUG:
+                    print(combination)
+                    print(combination_int)
     
             # #####
             # # Splitting
@@ -73,21 +76,20 @@ def create_vec_string(vec, search_string):
         right = char
         combination = left+right
         combination_int = hash_it(combination)
-        print(combination)
-        print(combination_int)
         vec[combination_int] += 1
-    return vec
+
+        if DEBUG:
+            print(combination)
+            print(combination_int)
+    return vec  # TODO given that it's a pointer should I even return it?
 
 def similarity(u, v):
-    u = norm1alize(u)  # This doesn't copy them, whic is good, save memory
+    u = norm1alize(u)  # This doesn't copy them, which is good, save memory
     v = norm1alize(v)
     return 1-distance.cosine(u, v)
-
-distance.cosine(np.array([1.0, 1, 1]), np.array([20.0, 20, 10]))
-distance.cosine(np.array([1.0, 1, 1]), np.array([2, 2, 1]))
 
 create_vec_stdin(doc_vec)
 create_vec_string(term_vec, sys.argv[1])
 print(sum(doc_vec))
 print(sum(term_vec))
-print(distance.cosine(doc_vec, term_vec))
+print(similarity(doc_vec, term_vec))
