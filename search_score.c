@@ -51,12 +51,22 @@ float arr_sum(float arr[], int arr_size) {
 
 
 void read_file(char *filename) {
-  printf("\n");
+  printf("The First Argument should be a file:\n");
   int i = 0;
   while (filename[i] != '\0') {
     printf("%c", filename[i]);
     i++;
   }
   printf("\n");
+
+  FILE *fp = fopen(filename, "r");
+  int c; //declare c as int so it can store '\0'
+  if (fp == NULL) {
+    perror("Error Opening File");
+  } else {
+    while ((c=fgetc(fp)) != EOF) {
+      printf("%c", c);
+    }
+  }
 
 }
