@@ -36,7 +36,7 @@ add_some = stop - start
 testvec = (np.zeros(N)) 
 testvec[3] += 1
 start = time.time()
-norm1alize_better(testvec)
+norm1alize_slower(testvec)
 stop = time.time()
 loop_over = stop - start
 
