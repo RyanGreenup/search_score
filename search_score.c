@@ -2,9 +2,9 @@
 #include <time.h>       // for clock_t, clock(), CLOCKS_PER_SEC
 
 // TODO this should probably be a dynamic array.
-#define MAXFILES                                                               \
-  = 10 ^ 6 /* Manimum number of Notes to search, 10^6<1GB memory */
-#define VECSIZE (9999+1)
+#define MAXFILES = 10 ^ 6 /* Manimum number of Notes to search,
+			     10^6<1GB memory */
+#define VECSIZE (500*1000) // TODO I'm limited to (int)1.3E6 here /* (128 choose 3)<500E3 */
 
 /* Variables */
 int i;
@@ -13,14 +13,16 @@ float x;
 /* Function Declarations */
 float arr_sum(float arr[], int arr_size);
 void fill_array(float arr[], int n);
-void read_file(char *filename);
+void read_file(char *filename, int *count_array);
 
 
 /* Main */
 
 int main(int argc, char *argv[]) {
   char *filename = argv[1];
-  read_file(filename);
+  int doc_vec[VECSIZE];
+  read_file(filename, doc_vec);
+  printf("the value of the array is %i", doc_vec[1]);
   /* float myvec[VECSIZE]; */
   /* fill_array(myvec, VECSIZE); */
   /* printf("sum is: %f\n\n", arr_sum(myvec, VECSIZE)); */
@@ -50,7 +52,7 @@ float arr_sum(float arr[], int arr_size) {
 }
 
 
-void read_file(char *filename) {
+void read_file(char *filename, int *count_array) {
   printf("The First Argument should be a file:\n");
   int i = 0;
   while (filename[i] != '\0') {
@@ -65,8 +67,10 @@ void read_file(char *filename) {
     perror("Error Opening File");
   } else {
     while ((c=fgetc(fp)) != EOF) {
-      printf("%c", c);
-    }
+      //      printf("%c", c); 		/* Cat the File */
+    } 
   }
+
+  count_array[1] = 11;
 
 }
