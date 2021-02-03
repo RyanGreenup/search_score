@@ -19,12 +19,6 @@ def norm1alize(vec):
     vec *= 1/sum(vec)
     return vec
 
-def norm1alize_slower(vec):
-    vec_sum = sum(vec)  # Slightly slower
-    for i in range(len(vec)):
-        if vec[i] != 0:
-            vec[i] *= (1/vec_sum)
-
 
 
 
