@@ -19,16 +19,7 @@ void fill_array(float arr[], int n);
 int main() {
   float myvec[VECSIZE];
   fill_array(myvec, VECSIZE);
-    double total_time = 0.0;
-
-    clock_t start = clock();
   printf("sum is: %f\n\n", arr_sum(myvec, VECSIZE));
-
-    clock_t stop = clock();
-
-    total_time += (double)(stop - start) / CLOCKS_PER_SEC;
- 
-    printf("Time elpased is %f seconds", total_time);
   return 0;
 }
 
