@@ -13,15 +13,20 @@ float x;
 /* Function Declarations */
 float arr_sum(float arr[], int arr_size);
 void fill_array(float arr[], int n);
+void read_file(char *filename);
+
 
 /* Main */
 
-int main() {
-  float myvec[VECSIZE];
-  fill_array(myvec, VECSIZE);
-  printf("sum is: %f\n\n", arr_sum(myvec, VECSIZE));
-  return 0;
+int main(int argc, char *argv[]) {
+  char *filename = argv[1];
+  read_file(filename);
+  /* float myvec[VECSIZE]; */
+  /* fill_array(myvec, VECSIZE); */
+  /* printf("sum is: %f\n\n", arr_sum(myvec, VECSIZE)); */
+  /* return 0; */
 }
+
 
 void fill_array(float arr[], int n) {
   int i; 
@@ -44,3 +49,14 @@ float arr_sum(float arr[], int arr_size) {
     return running_sum;
 }
 
+
+void read_file(char *filename) {
+  printf("\n");
+  int i = 0;
+  while (filename[i] != '\0') {
+    printf("%c", filename[i]);
+    i++;
+  }
+  printf("\n");
+
+}
