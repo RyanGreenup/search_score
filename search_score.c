@@ -5,19 +5,14 @@
 #include <time.h> // for clock_t, clock(), CLOCKS_PER_SEC
 
 /* * Symbolic Constants */
-// TODO this should probably be a dynamic array.
-// TODO I should consider using Sparse Matrices
+// TODO this should probably be a dynamic array.  TODO How can I know
+//      if a character is ASCII, I should Drop non ASCII Characters TODO I
+// should consider using Sparse Matrices
 #define MAXFILES = 10 ^ 6 /*Maximum number of Notes to search,*/
 
 // Choose length of vector, I'm limited to (int)1.3E6 here if inside a
 // function, so it has to be global, static variables tend to be
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
-// Choose length of vector, I'm limited to (int)1.3E6 here if inside a
-// function, so it has to be global, static variables tend to be
-// faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
-
-#define VECSIZE (500*1000)  
-#define VECSIZE (2*128*128) // 150^3 is SLOW, 3-tuple 100 sloewr than 2-tuple
 
 #define VECSIZE (2*150*150*150) // 150^3 is SLOW, 3-tuple 100 sloewr
 				// than 2-tuple
@@ -92,14 +87,16 @@ void read_file(char *filename, float *count_array) {
   if (fp == NULL) {
     perror("Error Opening File");
   } else {
+    int char_1 = 0;
+    int char_2 = 0;
     while ((c = fgetc(fp)) != EOF) {
-      //      printf("%c", c); 		/* Cat the File */
+      char_1 = char_2;
+      char_2 = c;
+      /* printf("\n%c", (char_1*char_2));  /\* Cat the File *\/ */
+      int index=(char_1*char_2);
+      count_array[index] += 1;
     }
   }
-
-  count_array[0] = 11; 
-  count_array[1] = 11; 
-  count_array[3] = 11; 
 
 }
 /* *** Read Second Argument (search Query) */
