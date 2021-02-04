@@ -22,12 +22,35 @@ void fill_array(float arr[], int n);
 // easier to code just for floats at the moment though
 void read_file(char *filename, float *count_array);
 void norm1_scale(float *source_array, float *target_array);
-float euclidean_length(float *source_array);
+float euclidean_length(float *source_array, int N);
 void read_query(char *term, float *count_array);
+float dot(float *vec1, float *vec2, int N);
 
 
 
-// TODO exit if two args are not given
+float dot(float *vec1, float *vec2, int N) {
+  float dot_val = 0;
+  for (i = 0; i < N; ++i) {
+    dot_val += vec1[i]*vec2[i];
+  }
+  return dot_val;
+  
+}
+
+float cos_dist(float *vec1, float*vec2, int N) {
+  float mod_vec1 = euclidean_length(vec1, VECSIZE);
+  float mod_vec2 = euclidean_length(vec2, VECSIZE);
+  return (dot(vec1, vec2, N))/(mod_vec1*mod_vec2);
+} 
+
+float similarity(float *vec1, float *vec2, int N) {
+  float vec1_scale[N];
+  float vec2_scale[N];
+  norm1_scale(vec1, vec1_scale);
+  norm1_scale(vec2, vec2_scale);
+  return (cos_dist(vec1_scale, vec2_scale, VECSIZE));
+}
+
 
 /* * Main */
 int main(int argc, char *argv[]) {
@@ -38,26 +61,29 @@ int main(int argc, char *argv[]) {
   float doc_vec_norm1[VECSIZE];  // Does not require Filling
 
   float query_vec[VECSIZE];       /* Delcare a Vector for the query*/
-  fill_array(query_vec, VECSIZE); /* Fill that vector with 0s */
+  fill_array(query_vec, VECSIZE);     /* Fill that vector with 0s */
   // Declare a Vector for the scaled values
   float query_vec_norm1[VECSIZE];  // Does not require Filling
 
   // give it some values
-  doc_vec[0] = 3;
-  doc_vec[1] = 6;
-  doc_vec[2] = 9;
+  doc_vec[0] = 1;
+  doc_vec[1] = 2;
+  doc_vec[2] = 3;
 
-  query_vec[0] = 3;
-  query_vec[1] = 6;
-  query_vec[2] = 9;
+  query_vec[0] = 1;
+  query_vec[1] = 1;
+  query_vec[2] = 1;
   // Scale that vector to 1
   norm1_scale(doc_vec, doc_vec_norm1);
 
-  // What is the Euclidean length of this vector
+  // Wha
   /* norm2_length(doc_vec); */
 
   read_file(argv[1], doc_vec); 	/* First argument is file */
   read_query(argv[2], query_vec); /* Second argument is query term */
+
+  float sim_score = similarity(doc_vec, query_vec, VECSIZE);
+  printf("The similarity is: %f", sim_score);
 
   /* float myvec[VECSIZE]; */
   /* printf("sum is: %f\n\n", arr_sum(doc_vec, VECSIZE)); */
@@ -85,7 +111,7 @@ void read_file(char *filename, float *count_array) {
     }
   }
 
-  count_array[1] = 11;
+  /* count_array[1] = 11; */ // NOTE how to pass it back up
 }
 /* ** Read Second Argument (search Query) */
 void read_query(char *term, float *count_array) {
@@ -105,9 +131,10 @@ void norm1_scale(float *source_array, float *target_array) {
   }
 }
 /* ** Euclidean Length (Mod||) */
-float euclidean_length(float *source_array) {
+/* TODO should take a parameter for vector length */
+float euclidean_length(float *source_array, int N) { 
   float SS = 0;
-  for (int i = 0; i < VECSIZE; ++i) {
+  for (int i = 0; i < N; ++i) {
     SS += (source_array[i] * source_array[i]);
   }
   return sqrtf(SS);
