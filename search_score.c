@@ -39,7 +39,7 @@ void norm1_scale(float *source_array, float *target_array);
 float euclidean_length(float *source_array, int N);
 void read_query(char *term, float *count_array);
 float dot(float *vec1, float *vec2, int N);
-float dot(float *vec1, float *vec2, int N);
+float dot(float *u, float *v, int N);
 float cos_dist(float *vec1, float*vec2, int N);
 float similarity(float *vec1, float *vec2, int N);
 
@@ -112,27 +112,18 @@ void read_query(char *term, float *count_array) {
 
 /* ** Cosine Similarity */
 
-float dot(float *vec1, float *vec2, int N) {
+float similarity(float *u, float *v, int N) {
   float dot_val = 0;
+  float u_dist2 = 0;
+  float v_dist2 = 0;
   for (i = 0; i < N; ++i) {
-    dot_val += vec1[i]*vec2[i];
+    float u_val = u[i];
+    float v_val = v[i];
+    dot_val += u_val * v_val;
+    u_dist2 += u_val*u_val;
+    v_dist2 += v_val*v_val;
   }
-  return dot_val;
-  
-}
-
-float cos_dist(float *vec1, float*vec2, int N) {
-  float mod_vec1 = euclidean_length(vec1, VECSIZE);
-  float mod_vec2 = euclidean_length(vec2, VECSIZE);
-  return (dot(vec1, vec2, N))/(mod_vec1*mod_vec2);
-} 
-
-float similarity(float *vec1, float *vec2, int N) {
-  /* Scale the vctors and put them into the scaled array */
-  norm1_scale(vec1, vec1_scale);
-  norm1_scale(vec2, vec2_scale);
-  /* Return the cosine Similarity */
-  return (cos_dist(vec1_scale, vec2_scale, VECSIZE));
+  return dot_val/(sqrt(u_dist2 * v_dist2));
 }
 
 /* ** Scale to 1 */
@@ -147,8 +138,7 @@ void norm1_scale(float *source_array, float *target_array) {
 float euclidean_length(float *source_array, int N) { 
   float SS = 0;
   for (int i = 0; i < N; ++i) {
-    SS += (source_array[i] * source_array[i]);
-  }
+    SS += (source_array[i] * source_array[i]);    }
   return sqrtf(SS);
 }
 
