@@ -87,8 +87,8 @@ void read_file(char *filename, float *count_array) {
   if (fp == NULL) {
     perror("Error Opening File");
   } else {
-    int char_1 = 0;
-    int char_2 = 0;
+    int char_1 = 32; // NOTE Treat first char as space
+    int char_2 = 32;
     while ((c = fgetc(fp)) != EOF) {
       char_1 = char_2;
       char_2 = c;
@@ -102,8 +102,14 @@ void read_file(char *filename, float *count_array) {
 /* *** Read Second Argument (search Query) */
 void read_query(char *term, float *count_array) {
   int i = 0; /* This will become the length of the Query */
+  int char_1 = 32; // NOTE Treat first char as space
+  int char_2 = 32;
   while (term[i] != '\0') {
-    printf("%c", term[i]);
+    char_1 = char_2;
+    char_2 = term[i];
+    int index = (char_1*char_2);
+    printf("\n%i * %i = %i\n", char_1, char_2, index);
+    printf("\n%c * %c = %i\n---\n", char_1, char_2, index);
     i++;  
   }
   printf("\n");
