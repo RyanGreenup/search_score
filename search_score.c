@@ -28,7 +28,6 @@ float euclidean_length(float *source_array);
 
 // TODO exit if two args are not given
 void read_query(char *term, float *count_array) {
-  printf("The second Argument should be a query:\n");
   int i = 0; /* This will become the length of the Query */
   while (term[i] != '\0') {
     printf("%c", term[i]);
@@ -45,15 +44,13 @@ int main(int argc, char *argv[]) {
   float doc_vec_norm1[VECSIZE]; /* Declare a Vector for the scaled values */
   // give it some values
   doc_vec[1] = 3;
-  doc_vec[3] = 4;
-  doc_vec[7] = 0;
+  doc_vec[3] = 6;
+  doc_vec[7] = 9;
   // Scale that vector to 1
   norm1_scale(doc_vec, doc_vec_norm1);
-  printf("the first value of the array is %f", doc_vec_norm1[1]);
 
   // What is the Euclidean length of this vector
   /* norm2_length(doc_vec); */
-  printf("\n The euclidean length is: %f\n", euclidean_length(doc_vec));
 
   read_file(argv[1], doc_vec); 	/* First argument is file */
   read_query(argv[2], query_vec); /* Second argument is query term */
@@ -66,8 +63,6 @@ int main(int argc, char *argv[]) {
 /* * Sub-Functions */
 void norm1_scale(float *source_array, float *target_array) {
   float sum_array = arr_sum(source_array, VECSIZE);
-  printf("\nThe sum of the elements is %f\n", sum_array);
-  printf("\nThe sum of the elements is %f", arr_sum(source_array, VECSIZE));
   for (int i = 0; i < VECSIZE; ++i) {
     target_array[i] = source_array[i] / sum_array;
   }
@@ -75,13 +70,9 @@ void norm1_scale(float *source_array, float *target_array) {
 
 float euclidean_length(float *source_array) {
   float SS = 0;
-  float sum_array = arr_sum(source_array, VECSIZE);
-  printf("\nThe sum of the elements is %f\n", sum_array);
-  printf("\nThe sum of the elements is %f", arr_sum(source_array, VECSIZE));
   for (int i = 0; i < VECSIZE; ++i) {
     SS += (source_array[i] * source_array[i]);
   }
-  /* printf("\naaaaaa%f", sqrtf(SS)); // NOTE remember gcc -lm */
   return sqrtf(SS);
 }
 
@@ -90,7 +81,6 @@ void fill_array(float arr[], int n) {
   for (i = 0; i < n; ++i) {
     float x = 0;
     arr[i] = x;
-    /* printf("\n%i", i); */
   }
 }
 
@@ -106,7 +96,6 @@ float arr_sum(float arr[], int arr_size) {
 }
 
 void read_file(char *filename, float *count_array) {
-  printf("The First Argument should be a file:\n");
   int i = 0;
   while (filename[i] != '\0') {
     printf("%c", filename[i]);
