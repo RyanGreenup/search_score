@@ -10,6 +10,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h> // for clock_t, clock(), CLOCKS_PER_SEC
+#include <stdlib.h>
 
 /* * Symbolic Constants */
 // TODO this should probably be a dynamic array.  TODO How can I know
@@ -157,16 +158,19 @@ void read_query(char *term, float *count_array) {
 
 float similarity(float *u, float *v, int N) {
   float dot_val = 0;
+  float manhattan=0;
   float u_dist2 = 0;
   float v_dist2 = 0;
   for (i = 0; i < N; ++i) {
     float u_val = u[i];
     float v_val = v[i];
-    dot_val += u_val * v_val;
-    u_dist2 += u_val*u_val;
-    v_dist2 += v_val*v_val;
+    /* dot_val += u_val * v_val; */
+    /* u_dist2 += u_val*u_val; */
+    /* v_dist2 += v_val*v_val; */
+    manhattan += fabs(u_val-v_val);
   }
-  return dot_val/(sqrt(u_dist2 * v_dist2));
+  /* return dot_val/(sqrt(u_dist2 * v_dist2)); */
+  return manhattan*100/N;
 }
 
 /* ** Scale to 1 */
