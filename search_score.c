@@ -24,10 +24,23 @@ void read_file(char *filename, float *count_array);
 void norm1_scale(float *source_array, float *target_array);
 float euclidean_length(float *source_array);
 
+
+
+// TODO exit if two args are not given
+void read_query(char *term, float *count_array) {
+  printf("The second Argument should be a query:\n");
+  int i = 0; /* This will become the length of the Query */
+  while (term[i] != '\0') {
+    printf("%c", term[i]);
+    i++;  
+  }
+  printf("\n");
+}
+
 /* * Main */
 int main(int argc, char *argv[]) {
-  char *filename = argv[1];     /* Get the First Argument */
   float doc_vec[VECSIZE];       /* Delcare a Vector for the Document */
+  float query_vec[VECSIZE];       /* Delcare a Vector for the query*/
   fill_array(doc_vec, VECSIZE); /* Fill that vector with 0s */
   float doc_vec_norm1[VECSIZE]; /* Declare a Vector for the scaled values */
   // give it some values
@@ -42,7 +55,8 @@ int main(int argc, char *argv[]) {
   /* norm2_length(doc_vec); */
   printf("\n The euclidean length is: %f\n", euclidean_length(doc_vec));
 
-  read_file(filename, doc_vec);
+  read_file(argv[1], doc_vec); 	/* First argument is file */
+  read_query(argv[2], query_vec); /* Second argument is query term */
 
   /* float myvec[VECSIZE]; */
   /* printf("sum is: %f\n\n", arr_sum(doc_vec, VECSIZE)); */
