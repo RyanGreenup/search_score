@@ -14,7 +14,7 @@
 // function, so it has to be global, static variables tend to be
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
-#define VECSIZE (2*150*150*150) // 150^3 is SLOW, 3-tuple 100 sloewr
+#define VECSIZE (2*150*150) // 150^3 is SLOW, 3-tuple 100 sloewr
 				// than 2-tuple
 // #define VECSIZE (2*128*128) 
 			    
@@ -50,12 +50,7 @@ float similarity(float *vec1, float *vec2, int N);
 int main(int argc, char *argv[]) {
   /* ** Create Arrays */
   fill_array(doc_vec, VECSIZE); /* Fill that vector with 0s */
-  // Declare a Vector for the scaled values
-  float doc_vec_norm1[VECSIZE];  // Does not require Filling
-
   fill_array(query_vec, VECSIZE);     /* Fill that vector with 0s */
-  // Declare a Vector for the scaled values
-  float query_vec_norm1[VECSIZE];  // Does not require Filling
 
 
   /* ** Fill Arrays with Occurrence of Strings */
@@ -64,7 +59,7 @@ int main(int argc, char *argv[]) {
 
   /* ** Calculate the similarity */
   float sim_score = similarity(doc_vec, query_vec, VECSIZE);
-  printf("The similarity is: %f", sim_score);
+  printf("%f", sim_score);
 
   /* float myvec[VECSIZE]; */
   /* printf("sum is: %f\n\n", arr_sum(doc_vec, VECSIZE)); */
@@ -77,10 +72,8 @@ int main(int argc, char *argv[]) {
 void read_file(char *filename, float *count_array) {
   int i = 0;
   while (filename[i] != '\0') {
-    printf("%c", filename[i]);
     i++;
   }
-  printf("\n");
 
   FILE *fp = fopen(filename, "r");
   int c; // declare c as int so it can store '\0'
@@ -99,11 +92,8 @@ void read_file(char *filename, float *count_array) {
       /* printf("\n%c", (char_1*char_2));  /\* Cat the File *\/ */
       int index=(char_1*char_2);
       count_array[index] += 1;
-	printf("\n%i * %i = %i\n", char_1, char_2, index);
-	printf("\n%c * %c = %i\n---\n", char_1, char_2, index);
     }
   }
-  printf("\n--------------\n");
 }
 /* *** Read Second Argument (search Query) */
 void read_query(char *term, float *count_array) {
@@ -120,19 +110,14 @@ void read_query(char *term, float *count_array) {
     char_2 = c;
     int index = (char_1*char_2);
     count_array[index] += 1;
-    printf("\n%i * %i = %i\n", char_1, char_2, index);
-    printf("\n%c * %c = %i\n---\n", char_1, char_2, index);
     i++;  // TODO why isn't it getting the last one.
   }
   // Files have a trailing LineFeed (10) strings don't so make
   // sure to count one on the string for accuracy.
-  printf("\n--------------\n");
   char_1 = char_2;
   char_2 = 32; // should be 10 LF, but I swapped LF for SPC above
   int index = char_1*char_2;
   count_array[index] += 1;
-    printf("\n%i * %i = %i\n", char_1, char_2, index);
-    printf("\n%c * %c = %i\n---\n", char_1, char_2, index);
 
 }
 
