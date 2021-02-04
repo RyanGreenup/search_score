@@ -1,4 +1,11 @@
-
+// TODO measure how many triples might occur in a document and
+//      write a version of this that works on triples by using modulo
+//      of the array size to choose the index to increment.
+// TODO did I scale the lists to 1? Do i need to?... Yes.
+// TODO Should loop over files to avoid shell
+// TODO Should test for arguments
+// TODO should print help
+// TODO Would TF-IDF weighting help?
 /* * Includes */
 #include <math.h>
 #include <stdio.h>
@@ -26,8 +33,8 @@ float doc_vec[VECSIZE];       /* Delcare a Vector for the Document */
 float query_vec[VECSIZE];       /* Delcare a Vector for the query*/
 
 /* Declare vectors to become scaled */
-float vec1_scale[VECSIZE];
-float vec2_scale[VECSIZE];
+float doc_vec_scaled[VECSIZE];
+float query_vec_scaled[VECSIZE];
 
 
 /* * Function Declarations */
@@ -57,8 +64,13 @@ int main(int argc, char *argv[]) {
   read_file(argv[1], doc_vec); 	/* First argument is file */
   read_query(argv[2], query_vec); /* Second argument is query term */
 
+  /* ** Scale the Arrays to 1                  */
+  norm1_scale(doc_vec, doc_vec_scaled);
+  norm1_scale(query_vec, query_vec_scaled);
+
+
   /* ** Calculate the similarity */
-  float sim_score = similarity(doc_vec, query_vec, VECSIZE);
+  float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE);
   printf("%f", sim_score);
 
   /* float myvec[VECSIZE]; */
