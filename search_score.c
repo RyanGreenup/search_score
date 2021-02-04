@@ -12,6 +12,12 @@
 // Choose length of vector, I'm limited to (int)1.3E6 here if inside a
 // function, so it has to be global, static variables tend to be
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
+// Choose length of vector, I'm limited to (int)1.3E6 here if inside a
+// function, so it has to be global, static variables tend to be
+// faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
+
+#define VECSIZE (500*1000)  
+#define VECSIZE (2*128*128) // 150^3 is SLOW, 3-tuple 100 sloewr than 2-tuple
 
 #define VECSIZE (2*150*150*150) // 150^3 is SLOW, 3-tuple 100 sloewr
 				// than 2-tuple
