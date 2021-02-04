@@ -6,15 +6,16 @@
 
 /* * Symbolic Constants */
 // TODO this should probably be a dynamic array.
+// TODO I should consider using Sparse Matrices
 #define MAXFILES = 10 ^ 6 /*Maximum number of Notes to search,*/
 
 // Choose length of vector, I'm limited to (int)1.3E6 here if inside a
 // function, so it has to be global, static variables tend to be
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
-// #define VECSIZE (2*150*150*150) // 150^3 is SLOW, 3-tuple 100 sloewr
+#define VECSIZE (2*150*150*150) // 150^3 is SLOW, 3-tuple 100 sloewr
 				// than 2-tuple
-#define VECSIZE (2*128*128) 
+// #define VECSIZE (2*128*128) 
 			    
 /* * Global Variables */
 int i;
