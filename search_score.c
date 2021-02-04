@@ -52,7 +52,7 @@ float arr_sum(float arr[], int arr_size) {
 }
 
 
-void read_file(char *filename, int *count_array) {
+void read_file(char *filename, float *count_array) {
   printf("The First Argument should be a file:\n");
   int i = 0;
   while (filename[i] != '\0') {
