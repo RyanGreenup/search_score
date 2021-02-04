@@ -90,33 +90,50 @@ void read_file(char *filename, float *count_array) {
     int char_1 = 32; // NOTE Treat first char as space
     int char_2 = 32;
     while ((c = fgetc(fp)) != EOF) {
+      // Replace tabs and whitespaces
+      if (c == 10 || c==13 || c==78 || c==9) {
+      c = 32;
+      }
       char_1 = char_2;
       char_2 = c;
       /* printf("\n%c", (char_1*char_2));  /\* Cat the File *\/ */
       int index=(char_1*char_2);
       count_array[index] += 1;
+	printf("\n%i * %i = %i\n", char_1, char_2, index);
+	printf("\n%c * %c = %i\n---\n", char_1, char_2, index);
     }
   }
-
+  printf("\n--------------\n");
 }
 /* *** Read Second Argument (search Query) */
 void read_query(char *term, float *count_array) {
   int i = 0; /* This will become the length of the Query */
   int char_1 = 32; // NOTE Treat first char as space
   int char_2 = 32;
-  while (term[i] != '\0') {
+  int c; // declare c as int so it can store '\0'
+  while ((c = term[i]) != '\0') {
+    // Replace tabs and whitespaces
+    if (c == 10 || c==13 || c==78 || c==9) {
+      c = 32;
+    }
     char_1 = char_2;
-    char_2 = term[i];
+    char_2 = c;
     int index = (char_1*char_2);
+    count_array[index] += 1;
     printf("\n%i * %i = %i\n", char_1, char_2, index);
     printf("\n%c * %c = %i\n---\n", char_1, char_2, index);
-    i++;  
+    i++;  // TODO why isn't it getting the last one.
   }
-  printf("\n");
+  // Files have a trailing LineFeed (10) strings don't so make
+  // sure to count one on the string for accuracy.
+  printf("\n--------------\n");
+  char_1 = char_2;
+  char_2 = 32; // should be 10 LF, but I swapped LF for SPC above
+  int index = char_1*char_2;
+  count_array[index] += 1;
+    printf("\n%i * %i = %i\n", char_1, char_2, index);
+    printf("\n%c * %c = %i\n---\n", char_1, char_2, index);
 
-  count_array[0] = 17; 
-  count_array[1] = 11; 
-  count_array[2] = 17; 
 }
 
 /* ** Cosine Similarity */
