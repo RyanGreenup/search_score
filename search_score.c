@@ -7,13 +7,26 @@
 /* * Symbolic Constants */
 // TODO this should probably be a dynamic array.
 #define MAXFILES = 10 ^ 6 /*Maximum number of Notes to search,*/
-// Choose length of vector, I'm limited to (int)1.3E6 here but
-// (binom(128, 3)<500E3) choose 3)<500E3
-// #define VECSIZE (500*1000)
-#define VECSIZE (3) // TODO Testing
 
+// Choose length of vector, I'm limited to (int)1.3E6 here if inside a
+// function, so it has to be global, static variables tend to be
+// faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
+
+// #define VECSIZE (2*150*150*150) // 150^3 is SLOW, 3-tuple 100 sloewr
+				// than 2-tuple
+#define VECSIZE (2*128*128) 
+			    
 /* * Global Variables */
 int i;
+/* Large arrays > 10^6 must be declared globally or static see : */
+/* https://stackoverflow.com/a/43015175 */
+float doc_vec[VECSIZE];       /* Delcare a Vector for the Document */
+float query_vec[VECSIZE];       /* Delcare a Vector for the query*/
+
+/* Declare vectors to become scaled */
+float vec1_scale[VECSIZE];
+float vec2_scale[VECSIZE];
+
 
 /* * Function Declarations */
 float arr_sum(float arr[], int arr_size);
@@ -34,12 +47,10 @@ float similarity(float *vec1, float *vec2, int N);
 /* * Main */
 int main(int argc, char *argv[]) {
   /* ** Create Arrays */
-  float doc_vec[VECSIZE];       /* Delcare a Vector for the Document */
   fill_array(doc_vec, VECSIZE); /* Fill that vector with 0s */
   // Declare a Vector for the scaled values
   float doc_vec_norm1[VECSIZE];  // Does not require Filling
 
-  float query_vec[VECSIZE];       /* Delcare a Vector for the query*/
   fill_array(query_vec, VECSIZE);     /* Fill that vector with 0s */
   // Declare a Vector for the scaled values
   float query_vec_norm1[VECSIZE];  // Does not require Filling
@@ -116,9 +127,6 @@ float cos_dist(float *vec1, float*vec2, int N) {
 } 
 
 float similarity(float *vec1, float *vec2, int N) {
-  /* Declare vectors to become scaled */
-  float vec1_scale[N];
-  float vec2_scale[N];
   /* Scale the vctors and put them into the scaled array */
   norm1_scale(vec1, vec1_scale);
   norm1_scale(vec2, vec2_scale);
