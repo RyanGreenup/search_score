@@ -53,6 +53,12 @@ float dot(float *u, float *v, int N);
 float cos_dist(float *vec1, float*vec2, int N);
 float similarity(float *vec1, float *vec2, int N);
 
+unsigned concatenate(unsigned x, unsigned y) {
+    unsigned pow = 10;
+    while(y >= pow)
+        pow *= 10;
+    return x * pow + y;        
+}
 
 
 /* * Main */
@@ -107,7 +113,9 @@ void read_file(char *filename, float *count_array) {
        char_3 = c;
       /* printf("\n%i", (char_1*char_2*char_3) % VECSIZE);  /\* Cat the File *\/ */
       /* printf("\n%c%c%c", char_1, char_2, char_3);  /\* Cat the File *\/ */
-      int index=((char_1*char_2*char_3) % VECSIZE);
+
+      int val = concatenate(concatenate(char_1, char_2), char_3);
+      int index = (val % VECSIZE);
       count_array[index] += 1;
     }
   }
@@ -127,7 +135,9 @@ void read_query(char *term, float *count_array) {
     char_1 = char_2;
     char_2 = char_3;
     char_3 = c;
-    int index = ((char_1*char_2*char_3) % VECSIZE);
+
+    int val = concatenate(concatenate(char_1, char_2), char_3);
+    int index = (val % VECSIZE);
     count_array[index] += 1;
     i++;  // TODO why isn't it getting the last one.
   }
@@ -136,7 +146,9 @@ void read_query(char *term, float *count_array) {
   char_1 = char_2;
   char_2 = char_3;
   char_3 = 32; // should be 10 LF, but I swapped LF for SPC above
-  int index = ((char_1*char_2*char_3) % VECSIZE);
+
+  int val = concatenate(concatenate(char_1, char_2), char_3);
+  int index = (val % VECSIZE);
   count_array[index] += 1;
 
 }
