@@ -21,7 +21,9 @@
 // function, so it has to be global, static variables tend to be
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
-#define VECSIZE (2*150*150) // 150^3 is SLOW, 3-tuple 100 sloewr
+// triples ~ N(20K, 5k)
+// doubles ~ N(16K, <5k)
+#define VECSIZE (50000) // 150^3 is SLOW, 3-tuple 100 sloewr
 				// than 2-tuple
 // #define VECSIZE (2*128*128) 
 			    
@@ -94,15 +96,18 @@ void read_file(char *filename, float *count_array) {
   } else {
     int char_1 = 32; // NOTE Treat first char as space
     int char_2 = 32;
+    int char_3 = 32;
     while ((c = fgetc(fp)) != EOF) {
       // Replace tabs and whitespaces
       if (c == 10 || c==13 || c==78 || c==9) {
       c = 32;
       }
-      char_1 = char_2;
-      char_2 = c;
-      /* printf("\n%c", (char_1*char_2));  /\* Cat the File *\/ */
-      int index=(char_1*char_2);
+       char_1 = char_2;
+       char_2 = char_3;
+       char_3 = c;
+      /* printf("\n%i", (char_1*char_2*char_3) % VECSIZE);  /\* Cat the File *\/ */
+      /* printf("\n%c%c%c", char_1, char_2, char_3);  /\* Cat the File *\/ */
+      int index=((char_1*char_2*char_3) % VECSIZE);
       count_array[index] += 1;
     }
   }
@@ -112,6 +117,7 @@ void read_query(char *term, float *count_array) {
   int i = 0; /* This will become the length of the Query */
   int char_1 = 32; // NOTE Treat first char as space
   int char_2 = 32;
+  int char_3 = 32;
   int c; // declare c as int so it can store '\0'
   while ((c = term[i]) != '\0') {
     // Replace tabs and whitespaces
@@ -119,16 +125,18 @@ void read_query(char *term, float *count_array) {
       c = 32;
     }
     char_1 = char_2;
-    char_2 = c;
-    int index = (char_1*char_2);
+    char_2 = char_3;
+    char_3 = c;
+    int index = ((char_1*char_2*char_3) % VECSIZE);
     count_array[index] += 1;
     i++;  // TODO why isn't it getting the last one.
   }
   // Files have a trailing LineFeed (10) strings don't so make
   // sure to count one on the string for accuracy.
   char_1 = char_2;
-  char_2 = 32; // should be 10 LF, but I swapped LF for SPC above
-  int index = char_1*char_2;
+  char_2 = char_3;
+  char_3 = 32; // should be 10 LF, but I swapped LF for SPC above
+  int index = ((char_1*char_2*char_3) % VECSIZE);
   count_array[index] += 1;
 
 }
