@@ -6,10 +6,18 @@
 // TODO Should test for arguments
 // TODO should print help
 // TODO Would TF-IDF weighting help?
+
 /* * Includes */
+// For String Comparison
 #include <math.h>
 #include <stdio.h>
 #include <time.h> // for clock_t, clock(), CLOCKS_PER_SEC
+// For directory search
+#include <unistd.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <string.h>
 
 /* * Symbolic Constants */
 // TODO this should probably be a dynamic array.  TODO How can I know
@@ -50,10 +58,10 @@ float dot(float *vec1, float *vec2, int N);
 float dot(float *u, float *v, int N);
 float cos_dist(float *vec1, float*vec2, int N);
 float similarity(float *vec1, float *vec2, int N);
+void listFilesRecursively(char *basePath, char *extensions[]);
+void print_if_ext(char *filename, char *extensions[]);
+unsigned int cantor_pairing(int a, int b);
 
-unsigned int cantor_pairing(int a, int b) {
-  return b+(a+b)*(a+b+1)/2;
-}
 
 
 /* * Main */
@@ -196,3 +204,65 @@ float arr_sum(float arr[], int arr_size) {
   return running_sum;
 }
 
+/* ** Cantor Pairing Function */
+unsigned int cantor_pairing(int a, int b) {
+  return b+(a+b)*(a+b+1)/2;
+}
+
+/* ** List Files in Directories */
+/* *** Print if Extension match */
+/* *** Check Extension */
+void print_if_ext(char *filename, char *extensions[]) {
+
+  for (int i = 0; i < 3; ++i) {
+    int j = 0;
+    int c;
+    char *ptr = strstr(filename, extensions[i]);
+      if (ptr != NULL) {
+    while ((c = filename[j]) != '\0') {
+      printf("%c", filename[j]);
+      j++;
+    }
+    printf("\n");
+      }
+  }
+
+}
+
+/* *** Recursive List */
+/**
+ * Lists all files and sub-directories recursively 
+ * considering path as base path.
+*  https://codeforwin.org/2018/03/c-program-to-list-all-files-in-a-directory-recursively.html 
+ */
+void listFilesRecursively(char *basePath, char *extensions[])
+{
+    char path[1000];
+    struct dirent *dp;
+    DIR *dir = opendir(basePath);
+
+    // Unable to open directory stream
+    if (!dir)
+        return;
+
+    while ((dp = readdir(dir)) != NULL)
+    {
+        if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
+        {
+	  print_if_ext(dp->d_name, extensions);
+
+            // Construct new path from our base path
+            strcpy(path, basePath);
+            strcat(path, "/");
+            strcat(path, dp->d_name);
+
+	    // Print the realpath file
+            // printf("%s\n", path);
+
+	    // Recurse into the directory
+            listFilesRecursively(path, extensions);
+        }
+    }
+
+    closedir(dir);
+}
