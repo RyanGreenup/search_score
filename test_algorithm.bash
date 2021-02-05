@@ -4,13 +4,12 @@
 IFS=$'\t\n'   # Split on newlines and tabs (but not on spaces)
 
 
-cd "${1}"
-for file in $(fd -I -e md -e org); do
-# for file in $(ls *.org); do
-    search_score $(realpath $file) "${2}"
-    echo -e "\t${file}"
-done |\
-   sort -rn #|\
+cd ~/Notes/
+# for file in $(fd -I -e md -e org); do
+file="$(fzf)"
+contents="$(cat $file | tr -d '\n')"
+echo -e "Finished Vars, staring search \n\n"
+search_score "${file}" "${contents}"
    # sed 's/^.*\t//' |\
    # sed 's/^/\//' 
 

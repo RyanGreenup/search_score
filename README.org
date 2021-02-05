@@ -20,3 +20,25 @@
   #+begin_src bash
     time echo 'some words here' | ./search.py 'some words'   
   #+end_src
+
+  
+* Note Size
+  There seems to be a difference in performance given the length of a
+  note, given that Wikipedia appears to have articles that are
+  [[https://en.wikipedia.org/wiki/Wikipedia:Words_per_article][on average]] 400-1000 characters long, that is what is reasonable to
+  target with my notes.
+
+  Here are some notes of varying length:
+
+| Words | Name                               | Performance         |
+|-------+------------------------------------+---------------------|
+| 27000 | Statistics All Export.org          | quite good actually |
+|   950 | Comparison of Markdown Editors     |                     |
+|   500 | cosine similarity                  |                     |
+|   100 | Create node vertex graphs in latex |                     |
+
+
+This could be because the search query needs to be closer in length?
+
+
+internal docs actual search preview editor markdown reload
