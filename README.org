@@ -41,4 +41,25 @@
 This could be because the search query needs to be closer in length?
 
 
-internal docs actual search preview editor markdown reload
+Actually by looking at the number of words that are meaningful in
+longer documents, it becomes clear that the reason my searching
+algorithm isn't useful is because of the amount of words not related
+to the search, particularly in =org= buffers where words like =PROPERTIES=
+and =ID= and =CUSTOM= are dominant.
+
+this can be inspected by doing:
+
+#+begin_src bash
+cat AbstractAlgebraNotes.org | tr -c '[:alnum:]' '[\n*]' | sort | uniq -c | sort -nr | head  -30
+#+end_src
+
+Experiments searching for the most frequent words indicates that the
+search algorithm works very well in that case, so the solution to this
+is definitely to implement some form of TF-IDF weighting to account
+for words that are not important.
+
+This might be hard in C, perhaps I should consider Go?
+
+From experimentation, there are about 50, 000 unique 4-tuples in a
+document, and this just about represents the upper bounds of what is
+feasible for this approach, so, using 4-tuples, is not the ideal solution.
