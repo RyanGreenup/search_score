@@ -6,6 +6,7 @@
 // TODO Should test for arguments
 // TODO should print help
 // TODO Would TF-IDF weighting help?
+// TODO this is still case sensitive
 
 /* * Includes */
 // For String Comparison
