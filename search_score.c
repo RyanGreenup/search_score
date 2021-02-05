@@ -111,6 +111,7 @@ void read_file(char *filename, float *count_array) {
       count_array[index] += 1;
     }
   }
+  fclose(fp);
 }
 /* *** Read Second Argument (search Query) */
 void read_query(char *term, float *count_array) {
