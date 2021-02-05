@@ -1,0 +1,22 @@
+#+TITLE:Searching text with C
+
+* How it works
+  Pull out all the ordered pair of words, then use TF-IDF weighting on
+  those, this way there's no stemming or anything to worry about.
+
+* Performance Considerations
+  With python calling the program takes 1.7 times longer than it takes
+  to run, there are overheads to calling a program, this will be far
+  far less for C, but, I should incorporate the loop and the sorting
+  inside C for the best performance.
+
+  
+  |                 | C       | Python |
+  |-----------------+---------+--------|
+  | Execution Time  | 1*10^-3 |    0.3 |
+  | Evaluation Time | 4*10^-5 |    0.5 |
+  |-----------------+---------+--------|
+  | Diff            | 1 ms    |  0.2 s |
+  #+begin_src bash
+    time echo 'some words here' | ./search.py 'some words'   
+  #+end_src
