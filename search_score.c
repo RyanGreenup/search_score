@@ -10,7 +10,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h> // for clock_t, clock(), CLOCKS_PER_SEC
-#include <stdlib.h>
 
 /* * Symbolic Constants */
 // TODO this should probably be a dynamic array.  TODO How can I know
@@ -22,9 +21,7 @@
 // function, so it has to be global, static variables tend to be
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
-// triples ~ N(20K, 5k)
-// doubles ~ N(16K, <5k)
-#define VECSIZE (50000) // 150^3 is SLOW, 3-tuple 100 sloewr
+#define VECSIZE (30*1000) // 150^3 is SLOW, 3-tuple 100 sloewr
 				// than 2-tuple
 // #define VECSIZE (2*128*128) 
 			    
@@ -54,11 +51,8 @@ float dot(float *u, float *v, int N);
 float cos_dist(float *vec1, float*vec2, int N);
 float similarity(float *vec1, float *vec2, int N);
 
-unsigned concatenate(unsigned x, unsigned y) {
-    unsigned pow = 10;
-    while(y >= pow)
-        pow *= 10;
-    return x * pow + y;        
+unsigned int cantor_pairing(int a, int b) {
+  return b+(a+b)*(a+b+1)/2;
 }
 
 
@@ -104,19 +98,17 @@ void read_file(char *filename, float *count_array) {
     int char_1 = 32; // NOTE Treat first char as space
     int char_2 = 32;
     int char_3 = 32;
-    while ((c = fgetc(fp)) != EOF) {
+    while ((c = tolower(fgetc(fp))) != EOF) {
       // Replace tabs and whitespaces
       if (c == 10 || c==13 || c==78 || c==9) {
-      c = 32;
+      /* c = 32; */
+	continue;
       }
-       char_1 = char_2;
-       char_2 = char_3;
-       char_3 = c;
-      /* printf("\n%i", (char_1*char_2*char_3) % VECSIZE);  /\* Cat the File *\/ */
-      /* printf("\n%c%c%c", char_1, char_2, char_3);  /\* Cat the File *\/ */
-
-      int val = concatenate(concatenate(char_1, char_2), char_3);
-      int index = (val % VECSIZE);
+      char_1 = char_2;
+      char_2 = char_3;
+      char_3 = c;
+      /* printf("\n%c", (char_1*char_2*char_3));  /\* Cat the File *\/ */
+      int index=(cantor_pairing(cantor_pairing(char_1,char_2), char_3) % VECSIZE);
       count_array[index] += 1;
     }
   }
@@ -131,14 +123,13 @@ void read_query(char *term, float *count_array) {
   while ((c = term[i]) != '\0') {
     // Replace tabs and whitespaces
     if (c == 10 || c==13 || c==78 || c==9) {
-      c = 32;
+      /* c = 32; */
+      continue;
     }
     char_1 = char_2;
     char_2 = char_3;
     char_3 = c;
-
-    int val = concatenate(concatenate(char_1, char_2), char_3);
-    int index = (val % VECSIZE);
+      int index=(cantor_pairing(cantor_pairing(char_1,char_2), char_3) % VECSIZE);
     count_array[index] += 1;
     i++;  // TODO why isn't it getting the last one.
   }
@@ -147,9 +138,7 @@ void read_query(char *term, float *count_array) {
   char_1 = char_2;
   char_2 = char_3;
   char_3 = 32; // should be 10 LF, but I swapped LF for SPC above
-
-  int val = concatenate(concatenate(char_1, char_2), char_3);
-  int index = (val % VECSIZE);
+  int index=(cantor_pairing(cantor_pairing(char_1,char_2), char_3) % VECSIZE);
   count_array[index] += 1;
 
 }
@@ -158,19 +147,16 @@ void read_query(char *term, float *count_array) {
 
 float similarity(float *u, float *v, int N) {
   float dot_val = 0;
-  float manhattan=0;
   float u_dist2 = 0;
   float v_dist2 = 0;
   for (i = 0; i < N; ++i) {
     float u_val = u[i];
     float v_val = v[i];
-    /* dot_val += u_val * v_val; */
-    /* u_dist2 += u_val*u_val; */
-    /* v_dist2 += v_val*v_val; */
-    manhattan += fabs(u_val-v_val);
+    dot_val += u_val * v_val;
+    u_dist2 += u_val*u_val;
+    v_dist2 += v_val*v_val;
   }
-  /* return dot_val/(sqrt(u_dist2 * v_dist2)); */
-  return manhattan*100/N;
+  return dot_val/(sqrt(u_dist2 * v_dist2));
 }
 
 /* ** Scale to 1 */
