@@ -29,7 +29,7 @@
 // function, so it has to be global, static variables tend to be
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
-#define VECSIZE (30*1000) // 150^3 is SLOW, 3-tuple 100 sloewr
+#define VECSIZE (50*1000) // 150^3 is SLOW, 3-tuple 100 sloewr
 				// than 2-tuple
 // #define VECSIZE (2*128*128) 
 			    
@@ -58,32 +58,22 @@ float dot(float *vec1, float *vec2, int N);
 float dot(float *u, float *v, int N);
 float cos_dist(float *vec1, float*vec2, int N);
 float similarity(float *vec1, float *vec2, int N);
-void listFilesRecursively(char *basePath, char *extensions[]);
-void print_if_ext(char *filename, char *extensions[]);
+void listFilesRecursively(char *basePath, char *extensions[], char *query_string);
+void print_if_ext(char *filename, char *extensions[], char *query_string);
 unsigned int cantor_pairing(int a, int b);
+void print(char *string);
 
 
 
 /* * Main */
 int main(int argc, char *argv[]) {
-  /* ** Create Arrays */
-  fill_array(doc_vec, VECSIZE); /* Fill that vector with 0s */
-  fill_array(query_vec, VECSIZE);     /* Fill that vector with 0s */
 
+  char *extensions[3];
+  extensions[0] = ".md";
+  extensions[1] = ".org";
+  extensions[2] = ".txt";
 
-  /* ** Fill Arrays with Occurrence of Strings */
-  read_file(argv[1], doc_vec); 	/* First argument is file */
-  read_query(argv[2], query_vec); /* Second argument is query term */
-
-  /* ** Scale the Arrays to 1                  */
-  norm1_scale(doc_vec, doc_vec_scaled);
-  norm1_scale(query_vec, query_vec_scaled);
-
-
-  /* ** Calculate the similarity */
-  float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE);
-  printf("%f", sim_score);
-
+  listFilesRecursively(argv[1], extensions, argv[2]);
   /* float myvec[VECSIZE]; */
   /* printf("sum is: %f\n\n", arr_sum(doc_vec, VECSIZE)); */
   /* return 0; */
@@ -212,18 +202,34 @@ unsigned int cantor_pairing(int a, int b) {
 /* ** List Files in Directories */
 /* *** Print if Extension match */
 /* *** Check Extension */
-void print_if_ext(char *filename, char *extensions[]) {
+void print_if_ext(char *filename, char *extensions[], char *query_string) {
 
   for (int i = 0; i < 3; ++i) {
     int j = 0;
     int c;
     char *ptr = strstr(filename, extensions[i]);
       if (ptr != NULL) {
-    while ((c = filename[j]) != '\0') {
-      printf("%c", filename[j]);
-      j++;
-    }
-    printf("\n");
+	/* ** Create Arrays */
+	fill_array(doc_vec, VECSIZE); /* Fill that vector with 0s */
+	fill_array(query_vec, VECSIZE);     /* Fill that vector with 0s */
+
+	/* ** Fill Arrays with Occurrence of Strings */
+	read_file(filename, doc_vec); 	/* First argument is file */
+	read_query(query_string, query_vec); /* Second argument is query term */
+
+	/* ** Scale the Arrays to 1                  */
+	norm1_scale(doc_vec, doc_vec_scaled);
+	norm1_scale(query_vec, query_vec_scaled);
+
+
+	/* ** Calculate the similarity */
+	float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE);
+	printf("%f\t", sim_score);
+	while ((c = filename[j]) != NULL) {
+	  printf("%c", filename[j]);
+	  j++;
+	}
+	printf("\n");
       }
   }
 
@@ -235,7 +241,7 @@ void print_if_ext(char *filename, char *extensions[]) {
  * considering path as base path.
 *  https://codeforwin.org/2018/03/c-program-to-list-all-files-in-a-directory-recursively.html 
  */
-void listFilesRecursively(char *basePath, char *extensions[])
+void listFilesRecursively(char *basePath, char *extensions[], char *query_string)
 {
     char path[1000];
     struct dirent *dp;
@@ -249,7 +255,6 @@ void listFilesRecursively(char *basePath, char *extensions[])
     {
         if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
         {
-	  print_if_ext(dp->d_name, extensions);
 
             // Construct new path from our base path
             strcpy(path, basePath);
@@ -257,12 +262,20 @@ void listFilesRecursively(char *basePath, char *extensions[])
             strcat(path, dp->d_name);
 
 	    // Print the realpath file
-            // printf("%s\n", path);
+	      print_if_ext(path, extensions, query_string);
 
 	    // Recurse into the directory
-            listFilesRecursively(path, extensions);
+            listFilesRecursively(path, extensions, query_string);
         }
     }
 
     closedir(dir);
+}
+
+void print(char *string) {
+  int j = 0;
+  char c;
+  while ((string[j] = c) != '\0') {
+    printf("%c", c);
+  }
 }
