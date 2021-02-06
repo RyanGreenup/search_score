@@ -12,6 +12,8 @@
 // For String Comparison
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h> 
+#include <ctype.h>  // tolower()
 #include <time.h> // for clock_t, clock(), CLOCKS_PER_SEC
 // For directory search
 #include <unistd.h>
@@ -227,7 +229,7 @@ void print_if_ext(char *filename, char *extensions[], char *query_string) {
 	/* ** Calculate the similarity */
 	float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE);
 	printf("%f\t", sim_score);
-	while ((c = filename[j]) != NULL) {
+	while ((c = filename[j]) != '\0') {
 	  printf("%c", filename[j]);
 	  j++;
 	}
