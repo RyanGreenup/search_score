@@ -7,8 +7,8 @@
 
 void printvec(float *array, int l) {
 
-  for (; l >= 0; l--) {
-    printf(" %f ", array[l]);
+  for (int k = 0; k < l; k++) {
+    printf(" %f ", array[k]);
     printf("\n");
   }
 }
@@ -18,7 +18,7 @@ void colSum(float source[3][4], float *destination) {
 
   for (int j = 0; j < NC; j++) {
     running_sum = 0;
-    for (int i = 0; i < NC; i++) {
+    for (int i = 0; i < NR; i++) {
       running_sum += source[i][j];
     }
     destination[j] = running_sum;
@@ -29,7 +29,7 @@ void colSum(float source[3][4], float *destination) {
 void rowSum(float source[3][4], float *destination) {
   float running_sum = 0;
 
-  for (int i = 0; i < NC; i++) {
+  for (int i = 0; i < NR; i++) {
     running_sum = 0;
     for (int j = 0; j < NC; j++) {
       running_sum += source[i][j];
@@ -85,7 +85,7 @@ void DTM_to_TFIDF(float DTM[NR][NC], float TFIDF[NR][NC]) {
   }
 }
 
-DTM_raw_to_freq(float DTM[NR][NC]) {
+void DTM_raw_to_freq(float DTM[NR][NC]) {
   float rowsums[NC];
   rowSum(DTM, rowsums);
 
@@ -108,16 +108,24 @@ int main() {
     }
   }
 
+  float destination[NC] = {1, 1, 1, 1};
+  colSum(my_array, destination);
+  printvec(destination, NC);
+  printf("\n---\n");
+
+  rowSum(my_array, destination);
+  printvec(destination, NR);
+
   /* DTM_raw_to_freq(my_array); */
   printmat(my_array);
 
   /* Implement TF-TF */
-  float TFIDF[NR][NC];
+  /* float TFIDF[NR][NC]; */
 
-  DTM_to_TFIDF(my_array, TFIDF);
+  /* DTM_to_TFIDF(my_array, TFIDF); */
 
-  printf("---\n---\n");
-  printmat(TFIDF);
+  /* printf("---\n---\n"); */
+  /* printmat(TFIDF); */
 
   /* Return Success */
   return 0;
