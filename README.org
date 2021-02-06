@@ -4,6 +4,21 @@
   Pull out all the ordered pair of words, then use TF-IDF weighting on
   those, this way there's no stemming or anything to worry about.
 
+  
+* Why
+  It means that a search query will not need to contain exact words
+  when conducting a search unlike /Recoll/. Unlike =grep= however this
+  approach will also work over multiple lines whereas grep only finds
+  matches, there is no logic for handling multiple terms,
+  e.g. =.*damp.*=, =.*reson.*= could be used one after the other with a
+  pipe =|=, but in that case the absence of one will remove a candidate
+  rather than merely penalize a term.
+
+  This approach aims to be a compromise between the two.
+
+  Not needing an index would be really cool as well, but optionally
+  having one would be really convenient to speed things up.
+
 * Performance Considerations
   With python calling the program takes 1.7 times longer than it takes
   to run, there are overheads to calling a program, this will be far
@@ -63,3 +78,10 @@ This might be hard in C, perhaps I should consider Go?
 From experimentation, there are about 50, 000 unique 4-tuples in a
 document, and this just about represents the upper bounds of what is
 feasible for this approach, so, using 4-tuples, is not the ideal solution.
+
+* TODO Implement TF-IDF Weighting with C.
+
+* TODO Test using norm2 scaling instead of norm1.
+
+
+* TODO I wonder if this could be wired in with org-roam somehow?

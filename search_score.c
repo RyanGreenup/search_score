@@ -30,7 +30,7 @@
 // function, so it has to be global, static variables tend to be
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
-#define VECSIZE (50*1000) // 150^3 is SLOW, 3-tuple 100 sloewr
+#define VECSIZE (30*1000) // 150^3 is SLOW, 3-tuple 100 sloewr
 				// than 2-tuple
 // #define VECSIZE (2*128*128) 
 			    
@@ -274,10 +274,3 @@ void listFilesRecursively(char *basePath, char *extensions[], char *query_string
     closedir(dir);
 }
 
-void print(char *string) {
-  int j = 0;
-  char c;
-  while ((string[j] = c) != '\0') {
-    printf("%c", c);
-  }
-}
