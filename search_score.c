@@ -89,7 +89,7 @@ void read_query(char *term, float DTM[NR][NC]);
 float dot(float *vec1, float *vec2, int N);
 float dot(float *u, float *v, int N);
 float cos_dist(float *vec1, float *vec2, int N);
-float similarity(float *vec1, float *vec2, int N);
+void similarity(float DTM[NR][NC], float sim_score[fc]);
 void listFilesRecursively(char *basePath, char *extensions[],
                           char *query_string);
 void print_if_ext(char *filename, char *extensions[], char *query_string);
@@ -133,30 +133,15 @@ int main(int argc, char *argv[]) {
   // Create the TFIDF (this also scales rows to add to 1, so they work with the cosine distance)
   DTM_to_TFIDF(DTM, TFIDF);
 
-  // Print the DTM
-  for (int i = 0; i < 9; i++) {
-    for (int j = 0; j < 9; j++) {
-      printf("%f\t", TFIDF[i][j]);
-    }
-    printf("\n");
-  }
-
   /* *** Calculate the similarity scores */
-  /* for (int i = 0; i < fc; i++ ) { */
-  /*   for (int j = 0; j < tc; j++) { */
-
-  /*   } */
-  /* } */
-
-  /* /\* *** Scale the Arrays to 1                  *\/ */
-  /* norm1_scale(doc_vec, doc_vec_scaled); */
-  /* norm1_scale(query_vec, query_vec_scaled); */
+  float sim_score[fc];
+  similarity(DTM, sim_score);
 
   /* /\* *** Calculate the similarity *\/ */
   /* float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE); */
-  /* for (; fc >= 0; --fc) { */
-  /*   printf("%f\t%s\n", sim_score, file_list[fc]); */
-  /* } */
+  for (int i = 0; i < fc; i++) {
+    printf("%f\t%s\n", sim_score[i], file_list[i]);
+  }
 
   return 0;
 }
@@ -240,18 +225,20 @@ void read_query(char *term, float DTM[NR][NC]) {
 
 /* ** Cosine Similarity */
 
-float similarity(float *u, float *v, int N) {
-  float dot_val = 0;
-  float u_dist2 = 0;
-  float v_dist2 = 0;
-  for (i = 0; i < N; ++i) {
-    float u_val = u[i];
-    float v_val = v[i];
-    dot_val += u_val * v_val;
-    u_dist2 += u_val * u_val;
-    v_dist2 += v_val * v_val;
+void similarity(float DTM[NR][NC], float sim_score[fc]) {
+  for (int i = 0; i < fc; i++) {
+    float dot_val = 0;
+    float u_dist2 = 0;
+    float v_dist2 = 0;
+    for (int j = 0; j < NR; ++j) {
+	float u_val = DTM[i][j];
+	float v_val = DTM[0][j];
+	dot_val += u_val * v_val;
+	u_dist2 += u_val * u_val;
+	v_dist2 += v_val * v_val;
+    }
+  sim_score[i] = dot_val / (sqrt(u_dist2 * v_dist2));
   }
-  return dot_val / (sqrt(u_dist2 * v_dist2));
 }
 
 /* ** Scale to 1 */
