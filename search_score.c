@@ -54,6 +54,7 @@
           // some other tupple.
 
 /* * Global Variables */
+int DEBUG = 0;
 int i;
 /* Large arrays > 10^6 must be declared globally or static see : */
 /* https://stackoverflow.com/a/43015175 */
@@ -116,7 +117,10 @@ int main(int argc, char *argv[]) {
            "this limit modify the NR value around the Top of the source");
     return 1;
   } else {
+    if (DEBUG) {
     printf("\n\n%i, different files detected\n", fc);
+    }
+
   }
 
   /* ** Fill the DTM */
