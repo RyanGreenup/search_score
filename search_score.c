@@ -130,15 +130,23 @@ int main(int argc, char *argv[]) {
     read_file(file_list[i], DTM, i); /* First argument is file */
   }
 
-  // Create the DTM
+  // Create the TFIDF (this also scales rows to add to 1, so they work with the cosine distance)
   DTM_to_TFIDF(DTM, TFIDF);
 
+  // Print the DTM
   for (int i = 0; i < 9; i++) {
     for (int j = 0; j < 9; j++) {
       printf("%f\t", TFIDF[i][j]);
     }
     printf("\n");
   }
+
+  /* *** Calculate the similarity scores */
+  /* for (int i = 0; i < fc; i++ ) { */
+  /*   for (int j = 0; j < tc; j++) { */
+
+  /*   } */
+  /* } */
 
   /* /\* *** Scale the Arrays to 1                  *\/ */
   /* norm1_scale(doc_vec, doc_vec_scaled); */
@@ -350,20 +358,33 @@ void listFilesRecursively(char *basePath, char *extensions[],
 void DTM_to_TFIDF(float DTM[NR][NC], float TFIDF[NR][NC]) {
   DTM_to_TF(DTM, TF);
   DTM_to_IDF(DTM, IDF);
+  float rowsums[fc];
+  for (int i = 0; i < fc; i++) {
+    rowsums[i] = 0;
+  }
 
-  for (int i = 0; i < NR; i++) {
-    for (int j = 0; j < NC; j++) {
+  for (int i = 0; i < fc; i++) {
+    for (int j = 0; j < tc; j++) {
       float tf_val = TF[i][j];
       float idf_val = IDF[j];
       TFIDF[i][j] = (tf_val * idf_val);
+      rowsums[i] += TFIDF[i][j];
     }
     printf("\n");
+  }
+  // Scale the TFIDF row wise for Cosine similarity
+  for (int i = 0; i < fc; i++) {
+    for (int j = 0; j < tc; j++) {
+      if (rowsums[i] != 0) {
+        TFIDF[i][j] = TFIDF[i][j]/rowsums[i];
+      }
+    }
   }
 }
 
 /* **** DTM To TF */
 void DTM_to_TF(float DTM[NR][NC], float TF[NR][NC]) {
-  for (int i = 0; i < NR; i++) {
+  for (int i = 0; i < fc; i++) {
     for (int j = 0; j < NC; j++) {
       TF[i][j] = logf(DTM[i][j] + 1);
     }
