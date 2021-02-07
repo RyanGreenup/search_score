@@ -10,45 +10,58 @@
 
 /* * Includes */
 // For String Comparison
+#include <ctype.h> // tolower()
 #include <math.h>
 #include <stdio.h>
-#include <stdlib.h> 
-#include <ctype.h>  // tolower()
+#include <stdlib.h>
 #include <time.h> // for clock_t, clock(), CLOCKS_PER_SEC
 // For directory search
-#include <unistd.h>
-#include <sys/types.h>
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 /* * Symbolic Constants */
 // TODO this should probably be a dynamic array.  TODO How can I know
 //      if a character is ASCII, I should Drop non ASCII Characters TODO I
 // should consider using Sparse Matrices
-#define MAXFILES = 10 ^ 6 /*Maximum number of Notes to search,*/
 
 // Choose length of vector, I'm limited to (int)1.3E6 here if inside a
 // function, so it has to be global, static variables tend to be
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
-#define VECSIZE (30*1000) // 150^3 is SLOW, 3-tuple 100 sloewr
-				// than 2-tuple
-// #define VECSIZE (2*128*128) 
-			    
+#define VECSIZE                                                                \
+  (30 * 1000) // 150^3 is SLOW, 3-tuple 100 sloewr
+              // than 2-tuple
+// #define VECSIZE (2*128*128)
+#define NR 10 * 1000       // The number of Columns of the DTM, i.e. max no. of files
+#define NC VECSIZE  // The number of columns of DTM, i.e. each different
+                    // occuring tupple, this is limit this to a value
+                    // that is as big as would be expected for
+                    // performance concerns, in the event that it is
+                    // exceeded the pattern loops over and increments
+                    // some other tupple.
+
+
 /* * Global Variables */
 int i;
 /* Large arrays > 10^6 must be declared globally or static see : */
 /* https://stackoverflow.com/a/43015175 */
-float doc_vec[VECSIZE];       /* Delcare a Vector for the Document */
-float query_vec[VECSIZE];       /* Delcare a Vector for the query*/
-char *file_list[10*1000]; // 10k files up to 4096 in length
-int fc; // TODO the file count should be local to the function recursing through dirs.
+float doc_vec[VECSIZE];     /* Delcare a Vector for the Document */
+float query_vec[VECSIZE];   /* Delcare a Vector for the query*/
+char *file_list[10 * 1000]; // 10k files up to 4096 in length
+int fc; // TODO the file count should be local to the function recursing through
+        // dirs. Hmm, this doesn't look easy because of the recursion.
+
+  /* ** Create the DTM */
+// This MUST be allocated outside main (or as static) because it is
+// too large for stack allocation
+  float DTM[NR + 1][NC]; // Add an extra row for the query, make 0 the query
 
 /* Declare vectors to become scaled */
 float doc_vec_scaled[VECSIZE];
 float query_vec_scaled[VECSIZE];
-
 
 /* * Function Declarations */
 float arr_sum(float arr[], int arr_size);
@@ -58,17 +71,16 @@ void fill_array(float arr[], int n);
 void read_file(char *filename, float *count_array);
 void norm1_scale(float *source_array, float *target_array);
 float euclidean_length(float *source_array, int N);
-void read_query(char *term, float *count_array);
+void read_query(char *term, float DTM[NR][NC]);
 float dot(float *vec1, float *vec2, int N);
 float dot(float *u, float *v, int N);
-float cos_dist(float *vec1, float*vec2, int N);
+float cos_dist(float *vec1, float *vec2, int N);
 float similarity(float *vec1, float *vec2, int N);
-void listFilesRecursively(char *basePath, char *extensions[], char *query_string);
+void listFilesRecursively(char *basePath, char *extensions[],
+                          char *query_string);
 void print_if_ext(char *filename, char *extensions[], char *query_string);
 unsigned int cantor_pairing(int a, int b);
 void print(char *string);
-
-
 
 /* * Main */
 int main(int argc, char *argv[]) {
@@ -80,29 +92,52 @@ int main(int argc, char *argv[]) {
 
   char *query_string = argv[2];
   listFilesRecursively(argv[1], extensions, query_string);
-  fc--; // TODO fc counts at the end so it's one bigger than it should be
-  printf("\n\n%i, different files detected\n", fc);
+  if ((fc+1) >= NR) {
+    printf("More Files than currently allowed, to increase"
+	    "this limit modify the NR value around the Top of the source"
+	   );
+    return 1;
+  } else {
+    printf("\n\n%i, different files detected\n", fc);
+    fflush(stdout);
+  }
 
-	/* ** Create Arrays */
-	fill_array(doc_vec, VECSIZE); /* Fill that vector with 0s */
-	fill_array(query_vec, VECSIZE);     /* Fill that vector with 0s */
+  /* ** Fill the DTM */
+  /* *** Zero the DTM */                // TODO this should be done as necessary, adds 1 ms
+for (int i = 0; i < fc; ++i) {        // Don't loop over all the array elements, too slow
+    for (int j = 0; j < NC; ++j) {
+      DTM[i][j] = 0;
+    }
+  }
+  /* *** Add the Query to row 0 of DTM */
+ read_query(query_string, DTM);/* Second argument is query term */
 
-	/* ** Fill Arrays with Occurrence of Strings */
-	read_file(file_list[fc], doc_vec); 	/* First argument is file */
-	read_query(query_string, query_vec); /* Second argument is query term */
+  /* *** Add the Files to the DTM */
+ for (int i = 0; i < fc; i++) {
+    /* **** Fill Arrays with Occurrence of Strings */
+    read_file(file_list[i], doc_vec); /* First argument is file */
 
-	/* ** Scale the Arrays to 1                  */
-	norm1_scale(doc_vec, doc_vec_scaled);
-	norm1_scale(query_vec, query_vec_scaled);
+    /* **** Copy the Document Vector into the DTM */ // TODO this is slow
+    for (int j = 0; j < NC; j++) {
+      DTM[i][j] = doc_vec[j];
+    }
+    for (int j = 0; j < 9; j++) {
+	printf("%f\t", DTM[i][j]);
+    }
+    printf("\n");
+  }
 
+  /* /\* *** Scale the Arrays to 1                  *\/ */
+  /* norm1_scale(doc_vec, doc_vec_scaled); */
+  /* norm1_scale(query_vec, query_vec_scaled); */
 
-	/* ** Calculate the similarity */
-	float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE);
-	for (; fc>=0; --fc) {
-	    printf("%f\t%s\n", sim_score, file_list[fc]);
-	}
+  /* /\* *** Calculate the similarity *\/ */
+  /* float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE); */
+  /* for (; fc >= 0; --fc) { */
+  /*   printf("%f\t%s\n", sim_score, file_list[fc]); */
+  /* } */
 
-  /* return 0; */
+  return 0;
 }
 
 /* * Sub-Functions */
@@ -124,48 +159,51 @@ void read_file(char *filename, float *count_array) {
     int char_3 = 32;
     while ((c = tolower(fgetc(fp))) != EOF) {
       // Replace tabs and whitespaces
-      if (c == 10 || c==13 || c==78 || c==9) {
-      /* c = 32; */
-	continue;
+      if (c == 10 || c == 13 || c == 78 || c == 9) {
+        /* c = 32; */
+        continue;
       }
       char_1 = char_2;
       char_2 = char_3;
       char_3 = c;
       /* printf("\n%c", (char_1*char_2*char_3));  /\* Cat the File *\/ */
-      int index=(cantor_pairing(cantor_pairing(char_1,char_2), char_3) % VECSIZE);
+      int index =
+          (cantor_pairing(cantor_pairing(char_1, char_2), char_3) % VECSIZE);
       count_array[index] += 1;
     }
   }
   fclose(fp);
 }
 /* *** Read Second Argument (search Query) */
-void read_query(char *term, float *count_array) {
-  int i = 0; /* This will become the length of the Query */
+void read_query(char *term, float DTM[NR][NC]) {
+  int rownum = 0; // the row of the DTM to put the query into
+  int i = 0;       /* This will become the length of the Query */
   int char_1 = 32; // NOTE Treat first char as space
   int char_2 = 32;
   int char_3 = 32;
   int c; // declare c as int so it can store '\0'
   while ((c = term[i]) != '\0') {
     // Replace tabs and whitespaces
-    if (c == 10 || c==13 || c==78 || c==9) {
+    if (c == 10 || c == 13 || c == 78 || c == 9) {
       /* c = 32; */
       continue;
     }
     char_1 = char_2;
     char_2 = char_3;
     char_3 = c;
-      int index=(cantor_pairing(cantor_pairing(char_1,char_2), char_3) % VECSIZE);
-    count_array[index] += 1;
-    i++;  // TODO why isn't it getting the last one.
+    int index =
+        (cantor_pairing(cantor_pairing(char_1, char_2), char_3) % VECSIZE);
+    DTM[rownum][index] += 1;
+    i++; // TODO why isn't it getting the last one.
   }
   // Files have a trailing LineFeed (10) strings don't so make
   // sure to count one on the string for accuracy.
   char_1 = char_2;
   char_2 = char_3;
   char_3 = 32; // should be 10 LF, but I swapped LF for SPC above
-  int index=(cantor_pairing(cantor_pairing(char_1,char_2), char_3) % VECSIZE);
-  count_array[index] += 1;
-
+  int index =
+      (cantor_pairing(cantor_pairing(char_1, char_2), char_3) % VECSIZE);
+  DTM[rownum][index] += 1;
 }
 
 /* ** Cosine Similarity */
@@ -178,10 +216,10 @@ float similarity(float *u, float *v, int N) {
     float u_val = u[i];
     float v_val = v[i];
     dot_val += u_val * v_val;
-    u_dist2 += u_val*u_val;
-    v_dist2 += v_val*v_val;
+    u_dist2 += u_val * u_val;
+    v_dist2 += v_val * v_val;
   }
-  return dot_val/(sqrt(u_dist2 * v_dist2));
+  return dot_val / (sqrt(u_dist2 * v_dist2));
 }
 
 /* ** Scale to 1 */
@@ -193,10 +231,11 @@ void norm1_scale(float *source_array, float *target_array) {
 }
 /* ** Euclidean Length (Mod||) */
 /* TODO should take a parameter for vector length */
-float euclidean_length(float *source_array, int N) { 
+float euclidean_length(float *source_array, int N) {
   float SS = 0;
   for (int i = 0; i < N; ++i) {
-    SS += (source_array[i] * source_array[i]);    }
+    SS += (source_array[i] * source_array[i]);
+  }
   return sqrtf(SS);
 }
 
@@ -223,7 +262,7 @@ float arr_sum(float arr[], int arr_size) {
 
 /* ** Cantor Pairing Function */
 unsigned int cantor_pairing(int a, int b) {
-  return b+(a+b)*(a+b+1)/2;
+  return b + (a + b) * (a + b + 1) / 2;
 }
 
 /* ** List Files in Directories */
@@ -232,56 +271,53 @@ unsigned int cantor_pairing(int a, int b) {
 void print_if_ext(char *filename, char *extensions[], char *query_string) {
 
   for (int i = 0; i < 3; ++i) {
-    int j = 0;
-    int c;
     char *ptr = strstr(filename, extensions[i]);
-      if (ptr != NULL) {
-	file_list[fc] = (char*) malloc (strlen(filename)+1);
-	/* file_list[fc] = filename; */
-        strncpy(file_list[fc], filename, strlen(filename)+1); // this is a saver version of that assignment, the +1 is for trailing \0, strncpy is safer than strcpy because it takes length arg.
-	// see https://stackoverflow.com/a/41653464
+    if (ptr != NULL) {
+      file_list[fc] = (char *)malloc(strlen(filename) + 1);
+      /* file_list[fc] = filename; */
+      strncpy(file_list[fc], filename,
+              strlen(filename) +
+                  1); // this is a saver version of that assignment, the +1 is
+                      // for trailing \0, strncpy is safer than strcpy because
+                      // it takes length arg.
+      // see https://stackoverflow.com/a/41653464
 
-
-	fc ++; // Increment the file count
-      }
+      fc++; // Increment the file count
+    }
   }
-
 }
 
 /* *** Recursive List */
 /**
- * Lists all files and sub-directories recursively 
+ * Lists all files and sub-directories recursively
  * considering path as base path.
-*  https://codeforwin.org/2018/03/c-program-to-list-all-files-in-a-directory-recursively.html 
+ *  https://codeforwin.org/2018/03/c-program-to-list-all-files-in-a-directory-recursively.html
  */
-void listFilesRecursively(char *basePath, char *extensions[], char *query_string)
-{
-    char path[1000];
-    struct dirent *dp;
-    DIR *dir = opendir(basePath);
+void listFilesRecursively(char *basePath, char *extensions[],
+                          char *query_string) {
+  char path[1000];
+  struct dirent *dp;
+  DIR *dir = opendir(basePath);
 
-    // Unable to open directory stream
-    if (!dir)
-        return;
+  // Unable to open directory stream
+  if (!dir)
+    return;
 
-    while ((dp = readdir(dir)) != NULL)
-    {
-        if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
-        {
+  while ((dp = readdir(dir)) != NULL) {
+    if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) {
 
-            // Construct new path from our base path
-            strcpy(path, basePath);
-            strcat(path, "/");
-            strcat(path, dp->d_name);
+      // Construct new path from our base path
+      strcpy(path, basePath);
+      strcat(path, "/");
+      strcat(path, dp->d_name);
 
-	    // Print the realpath file
-	      print_if_ext(path, extensions, query_string);
+      // Print the realpath file
+      print_if_ext(path, extensions, query_string);
 
-	    // Recurse into the directory
-            listFilesRecursively(path, extensions, query_string);
-        }
+      // Recurse into the directory
+      listFilesRecursively(path, extensions, query_string);
     }
+  }
 
-    closedir(dir);
+  closedir(dir);
 }
-
