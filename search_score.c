@@ -7,6 +7,9 @@
 // TODO should print help
 // TODO Would TF-IDF weighting help?
 // TODO this is still case sensitive
+// TODO I should really limit the scope of consideration to what I
+       // would expect to see in the query, so a-z0-9 with spaces=.=, =,=,
+       // that would reduce the need to have such a large NC.
 
 /* * Includes */
 // For String Comparison
@@ -53,6 +56,8 @@ float query_vec[VECSIZE];   /* Delcare a Vector for the query*/
 char *file_list[10 * 1000]; // 10k files up to 4096 in length
 int fc; // TODO the file count should be local to the function recursing through
         // dirs. Hmm, this doesn't look easy because of the recursion.
+int tc; // The largest index value used to store a tupple, so the
+	// widest column used in the DTM
 
   /* ** Create the DTM */
 // This MUST be allocated outside main (or as static) because it is
@@ -99,16 +104,10 @@ int main(int argc, char *argv[]) {
     return 1;
   } else {
     printf("\n\n%i, different files detected\n", fc);
-    fflush(stdout);
   }
 
   /* ** Fill the DTM */
   /* *** Zero the DTM */                // TODO this should be done as necessary, adds 1 ms
-for (int i = 0; i < fc; ++i) {        // Don't loop over all the array elements, too slow
-    for (int j = 0; j < NC; ++j) {
-      DTM[i][j] = 0;
-    }
-  }
   /* *** Add the Query to row 0 of DTM */
  read_query(query_string, DTM);/* Second argument is query term */
 
@@ -122,6 +121,7 @@ for (int i = 0; i < fc; ++i) {        // Don't loop over all the array elements,
     }
     printf("\n");
   }
+
 
   /* /\* *** Scale the Arrays to 1                  *\/ */
   /* norm1_scale(doc_vec, doc_vec_scaled); */
@@ -153,6 +153,11 @@ void read_file(char *filename, float DTM[NR][NC], int row) {
     int char_1 = 32; // NOTE Treat first char as space
     int char_2 = 32;
     int char_3 = 32;
+    // Zero the DTM
+    for (int j = 0; j < NC; ++j) {
+      DTM[row][j] = 0;
+    }
+    // Go over the characters
     while ((c = tolower(fgetc(fp))) != EOF) {
       // Replace tabs and whitespaces
       if (c == 10 || c == 13 || c == 78 || c == 9) {
@@ -166,6 +171,9 @@ void read_file(char *filename, float DTM[NR][NC], int row) {
       int index =
           (cantor_pairing(cantor_pairing(char_1, char_2), char_3) % VECSIZE);
       DTM[row][index] += 1;
+      if (index > tc) {
+	tc = index;
+      }
     }
   }
   fclose(fp);
@@ -178,6 +186,9 @@ void read_query(char *term, float DTM[NR][NC]) {
   int char_2 = 32;
   int char_3 = 32;
   int c; // declare c as int so it can store '\0'
+  for (int j = 0; j < NC; j++) {
+    DTM[rownum][j] = 0;
+    }
   while ((c = term[i]) != '\0') {
     // Replace tabs and whitespaces
     if (c == 10 || c == 13 || c == 78 || c == 9) {
