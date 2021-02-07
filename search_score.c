@@ -234,12 +234,7 @@ void print_if_ext(char *filename, char *extensions[], char *query_string) {
 
 	/* ** Calculate the similarity */
 	float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE);
-	printf("%f\t", sim_score);
-	while ((c = filename[j]) != '\0') {
-	  printf("%c", filename[j]);
-	  j++;
-	}
-	printf("\n");
+	printf("%f\t%s\n", sim_score, filename);
       }
   }
 
