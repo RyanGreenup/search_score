@@ -8,9 +8,15 @@
 // TODO Would TF-IDF weighting help?
 // TODO this is still case sensitive
 // TODO I should really limit the scope of consideration to what I
-       // would expect to see in the query, so a-z0-9 with spaces=.=, =,=,
-       // that would reduce the need to have such a large NC.
-
+// would expect to see in the query, so a-z0-9 with spaces=.=, =,=,
+// that would reduce the need to have such a large NC.
+// TODO If I'm very careful, could I turn the DTM into a TFIDF in place
+       // to reduce the amount of memory used?
+       // What if I extracted the IDF as a vector and then turned the DTM into the TF.
+       // I could then take that TF, multiply through the IDF and then that would be
+       // NOTE This is absolutely necessary
+// TODO make sure that the DTM TFIDF stuff is using floats to reduce memory usage
+// the TFIDF
 /* * Includes */
 // For String Comparison
 #include <ctype.h> // tolower()
@@ -35,17 +41,17 @@
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
 #define VECSIZE                                                                \
-  (30 * 1000) // 150^3 is SLOW, 3-tuple 100 sloewr
+  (30 * 10) // 150^3 is SLOW, 3-tuple 100 sloewr
               // than 2-tuple
 // #define VECSIZE (2*128*128)
-#define NR 10 * 1000       // The number of Columns of the DTM, i.e. max no. of files
-#define NC VECSIZE  // The number of columns of DTM, i.e. each different
-                    // occuring tupple, this is limit this to a value
-                    // that is as big as would be expected for
-                    // performance concerns, in the event that it is
-                    // exceeded the pattern loops over and increments
-                    // some other tupple.
-
+#define NR 10 * 1000 // The number of Columns of the DTM, i.e. max no. of files
+#define NC                                                                     \
+  VECSIZE // The number of columns of DTM, i.e. each different
+          // occuring tupple, this is limit this to a value
+          // that is as big as would be expected for
+          // performance concerns, in the event that it is
+          // exceeded the pattern loops over and increments
+          // some other tupple.
 
 /* * Global Variables */
 int i;
@@ -57,12 +63,15 @@ char *file_list[10 * 1000]; // 10k files up to 4096 in length
 int fc; // TODO the file count should be local to the function recursing through
         // dirs. Hmm, this doesn't look easy because of the recursion.
 int tc; // The largest index value used to store a tupple, so the
-	// widest column used in the DTM
+        // widest column used in the DTM
 
-  /* ** Create the DTM */
+/* ** Create the DTM */
 // This MUST be allocated outside main (or as static) because it is
 // too large for stack allocation
-  float DTM[NR + 1][NC]; // Add an extra row for the query, make 0 the query
+float DTM[NR + 1][NC]; // Add an extra row for the query, make 0 the query
+float TFIDF[NR + 1][NC];
+float TF[NR][NC];
+float IDF[NC];
 
 /* Declare vectors to become scaled */
 float doc_vec_scaled[VECSIZE];
@@ -86,6 +95,11 @@ void listFilesRecursively(char *basePath, char *extensions[],
 void print_if_ext(char *filename, char *extensions[], char *query_string);
 unsigned int cantor_pairing(int a, int b);
 void print(char *string);
+void DTM_to_TFIDF(float DTM[NR][NC], float TFIDF[NR][NC]);
+void DTM_to_TF(float DTM[NR][NC], float TF[NR][NC]);
+void DTM_to_IDF(float DTM[NR][NC], float IDF[NC]);
+void colSum(float source[NR][NC], float *destination);
+void num_above_average(float DTM[NR][NC], float *destination);
 
 /* * Main */
 int main(int argc, char *argv[]) {
@@ -97,31 +111,34 @@ int main(int argc, char *argv[]) {
 
   char *query_string = argv[2];
   listFilesRecursively(argv[1], extensions, query_string);
-  if ((fc+1) >= NR) {
+  if ((fc + 1) >= NR) {
     printf("More Files than currently allowed, to increase"
-	    "this limit modify the NR value around the Top of the source"
-	   );
+           "this limit modify the NR value around the Top of the source");
     return 1;
   } else {
     printf("\n\n%i, different files detected\n", fc);
   }
 
   /* ** Fill the DTM */
-  /* *** Zero the DTM */                // TODO this should be done as necessary, adds 1 ms
-  /* *** Add the Query to row 0 of DTM */
- read_query(query_string, DTM);/* Second argument is query term */
+  /* *** Zero the DTM */ // TODO this should be done as necessary, adds 1 ms
+                         /* *** Add the Query to row 0 of DTM */
+  read_query(query_string, DTM); /* Second argument is query term */
 
   /* *** Add the Files to the DTM */
- for (int i = 0; i < fc; i++) {
+  for (int i = 0; i < fc; i++) {
     /* **** Fill Arrays with Occurrence of Strings */
-   read_file(file_list[i], DTM, i); /* First argument is file */
+    read_file(file_list[i], DTM, i); /* First argument is file */
+  }
 
+  // Create the DTM
+  DTM_to_TFIDF(DTM, TFIDF);
+
+  for (int i = 0; i < 9; i++) {
     for (int j = 0; j < 9; j++) {
-	printf("%f\t", DTM[i][j]);
+      printf("%f\t", TFIDF[i][j]);
     }
     printf("\n");
   }
-
 
   /* /\* *** Scale the Arrays to 1                  *\/ */
   /* norm1_scale(doc_vec, doc_vec_scaled); */
@@ -172,7 +189,7 @@ void read_file(char *filename, float DTM[NR][NC], int row) {
           (cantor_pairing(cantor_pairing(char_1, char_2), char_3) % VECSIZE);
       DTM[row][index] += 1;
       if (index > tc) {
-	tc = index;
+        tc = index;
       }
     }
   }
@@ -180,7 +197,7 @@ void read_file(char *filename, float DTM[NR][NC], int row) {
 }
 /* *** Read Second Argument (search Query) */
 void read_query(char *term, float DTM[NR][NC]) {
-  int rownum = 0; // the row of the DTM to put the query into
+  int rownum = 0;  // the row of the DTM to put the query into
   int i = 0;       /* This will become the length of the Query */
   int char_1 = 32; // NOTE Treat first char as space
   int char_2 = 32;
@@ -188,7 +205,7 @@ void read_query(char *term, float DTM[NR][NC]) {
   int c; // declare c as int so it can store '\0'
   for (int j = 0; j < NC; j++) {
     DTM[rownum][j] = 0;
-    }
+  }
   while ((c = term[i]) != '\0') {
     // Replace tabs and whitespaces
     if (c == 10 || c == 13 || c == 78 || c == 9) {
@@ -327,4 +344,80 @@ void listFilesRecursively(char *basePath, char *extensions[],
   }
 
   closedir(dir);
+}
+/* ** DTM */
+/* *** DTM to IDF */
+void DTM_to_TFIDF(float DTM[NR][NC], float TFIDF[NR][NC]) {
+  DTM_to_TF(DTM, TF);
+  DTM_to_IDF(DTM, IDF);
+
+  for (int i = 0; i < NR; i++) {
+    for (int j = 0; j < NC; j++) {
+      float tf_val = TF[i][j];
+      float idf_val = IDF[j];
+      TFIDF[i][j] = (tf_val * idf_val);
+    }
+    printf("\n");
+  }
+}
+
+/* **** DTM To TF */
+void DTM_to_TF(float DTM[NR][NC], float TF[NR][NC]) {
+  for (int i = 0; i < NR; i++) {
+    for (int j = 0; j < NC; j++) {
+      TF[i][j] = logf(DTM[i][j] + 1);
+    }
+  }
+}
+
+/* **** DTM to IDF */
+
+void DTM_to_IDF(float DTM[NR][NC], float IDF[NC]) {
+  float colsums[NC];
+  colSum(DTM, colsums);
+  float ft[NC];
+  num_above_average(DTM, ft);
+
+  for (int j = 0; j < NC; j++) {
+    IDF[j] = (fc / ft[j]);
+  }
+}
+
+/* **** Helpers */
+
+void colSum(float source[NR][NC], float *destination) {
+  float running_sum = 0;
+
+  for (int j = 0; j < NC; j++) {
+    running_sum = 0;
+    for (int i = 0; i < NR; i++) {
+      running_sum += source[i][j];
+    }
+    destination[j] = running_sum;
+  }
+}
+
+void num_above_average(float DTM[NR][NC], float *destination) {
+  float running_sum = 0;
+  int i = 0; // rows or documents, smallish
+  int j = 0; // columns or terms, Very large 
+
+  for (j = 0; j < NC; j++) {
+    running_sum = 0;
+    // Calculate the average of the column
+    for (i = 0; i < NR; i++) {
+      running_sum += DTM[i][j];
+    }
+    float average = running_sum/NR;
+    // Count the number above the average
+    // Nope for now do the number not zero
+    int ft = 0;
+    for (i = 0; i < NR; i++) {
+      /* if (DTM[i][j] > average) { */
+      if (DTM[i][j] > 0) {
+	ft++;
+      }
+    }
+    destination[j] = ft;
+  }
 }
