@@ -86,7 +86,7 @@ void read_file(char *filename, float DTM[NR][NC], int row);
 void norm1_scale(float *source_array, float *target_array);
 float euclidean_length(float *source_array, int N);
 void read_query(char *term, float DTM[NR][NC]);
-float dot(float *vec1, float *vec2, int N);
+float dot(float *vec1, float *vec2, int N); // TODO delete me ?
 float dot(float *u, float *v, int N);
 float cos_dist(float *vec1, float *vec2, int N);
 void similarity(float DTM[NR][NC], float sim_score[fc]);
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
   read_query(query_string, DTM); /* Second argument is query term */
 
   /* *** Add the Files to the DTM */
-  for (int i = 0; i < fc; i++) {
+  for (int i = 1; i < fc; i++) { //NOTE remember that the first row is the query
     /* **** Fill Arrays with Occurrence of Strings */
     read_file(file_list[i], DTM, i); /* First argument is file */
   }
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
 
   /* /\* *** Calculate the similarity *\/ */
   /* float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE); */
-  for (int i = 0; i < fc; i++) {
+  for (int i = 1; i < fc; i++) { // NOTE remember the first row of DTM is query
     printf("%f\t%s\n", sim_score[i], file_list[i]);
   }
 
@@ -226,13 +226,13 @@ void read_query(char *term, float DTM[NR][NC]) {
 /* ** Cosine Similarity */
 
 void similarity(float DTM[NR][NC], float sim_score[fc]) {
-  for (int i = 0; i < fc; i++) {
+  for (int i = 1; i < fc; i++) { // NOTE Remember row 0 is the query
     float dot_val = 0;
     float u_dist2 = 0;
     float v_dist2 = 0;
-    for (int j = 0; j < NR; ++j) {
-	float u_val = DTM[i][j];
-	float v_val = DTM[0][j];
+    for (int j = 0; j < tc; ++j) {
+	float u_val = TFIDF[i][j];
+	float v_val = TFIDF[0][j];
 	dot_val += u_val * v_val;
 	u_dist2 += u_val * u_val;
 	v_dist2 += v_val * v_val;
