@@ -42,6 +42,8 @@ int i;
 /* https://stackoverflow.com/a/43015175 */
 float doc_vec[VECSIZE];       /* Delcare a Vector for the Document */
 float query_vec[VECSIZE];       /* Delcare a Vector for the query*/
+char *file_list[10*1000]; // 10k files up to 4096 in length
+int fc; // TODO the file count should be local to the function recursing through dirs.
 
 /* Declare vectors to become scaled */
 float doc_vec_scaled[VECSIZE];
@@ -77,6 +79,7 @@ int main(int argc, char *argv[]) {
   extensions[2] = ".txt";
 
   listFilesRecursively(argv[1], extensions, argv[2]);
+  printf("\n\n%i, different files detected\n", fc);
   /* float myvec[VECSIZE]; */
   /* printf("sum is: %f\n\n", arr_sum(doc_vec, VECSIZE)); */
   /* return 0; */
@@ -213,6 +216,9 @@ void print_if_ext(char *filename, char *extensions[], char *query_string) {
     int c;
     char *ptr = strstr(filename, extensions[i]);
       if (ptr != NULL) {
+	file_list[fc] = filename;
+	fc ++;
+
 	/* ** Create Arrays */
 	fill_array(doc_vec, VECSIZE); /* Fill that vector with 0s */
 	fill_array(query_vec, VECSIZE);     /* Fill that vector with 0s */
