@@ -78,11 +78,30 @@ int main(int argc, char *argv[]) {
   extensions[1] = ".org";
   extensions[2] = ".txt";
 
-  listFilesRecursively(argv[1], extensions, argv[2]);
+  char *query_string = argv[2];
+  listFilesRecursively(argv[1], extensions, query_string);
+  fc--; // TODO fc counts at the end so it's one bigger than it should be
   printf("\n\n%i, different files detected\n", fc);
 
-  /* float myvec[VECSIZE]; */
-  /* printf("sum is: %f\n\n", arr_sum(doc_vec, VECSIZE)); */
+	/* ** Create Arrays */
+	fill_array(doc_vec, VECSIZE); /* Fill that vector with 0s */
+	fill_array(query_vec, VECSIZE);     /* Fill that vector with 0s */
+
+	/* ** Fill Arrays with Occurrence of Strings */
+	read_file(file_list[fc], doc_vec); 	/* First argument is file */
+	read_query(query_string, query_vec); /* Second argument is query term */
+
+	/* ** Scale the Arrays to 1                  */
+	norm1_scale(doc_vec, doc_vec_scaled);
+	norm1_scale(query_vec, query_vec_scaled);
+
+
+	/* ** Calculate the similarity */
+	float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE);
+	for (; fc>=0; --fc) {
+	    printf("%f\t%s\n", sim_score, file_list[fc]);
+	}
+
   /* return 0; */
 }
 
@@ -220,23 +239,8 @@ void print_if_ext(char *filename, char *extensions[], char *query_string) {
 	file_list[fc] = (char*) malloc (strlen(filename)+1);
 	/* file_list[fc] = filename; */
         strncpy(file_list[fc], filename, strlen(filename)+1); // this is a saver version of that assignment, the +1 is for trailing \0, strncpy is safer than strcpy because it takes length arg.
+	// see https://stackoverflow.com/a/41653464
 
-	/* ** Create Arrays */
-	fill_array(doc_vec, VECSIZE); /* Fill that vector with 0s */
-	fill_array(query_vec, VECSIZE);     /* Fill that vector with 0s */
-
-	/* ** Fill Arrays with Occurrence of Strings */
-	read_file(file_list[fc], doc_vec); 	/* First argument is file */
-	read_query(query_string, query_vec); /* Second argument is query term */
-
-	/* ** Scale the Arrays to 1                  */
-	norm1_scale(doc_vec, doc_vec_scaled);
-	norm1_scale(query_vec, query_vec_scaled);
-
-
-	/* ** Calculate the similarity */
-	float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE);
-	/* printf("%f\t%s\n", sim_score, file_list[fc]); */
 
 	fc ++; // Increment the file count
       }
