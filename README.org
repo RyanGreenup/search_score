@@ -85,3 +85,11 @@ feasible for this approach, so, using 4-tuples, is not the ideal solution.
 
 
 * TODO I wonder if this could be wired in with org-roam somehow?
+* Large Array issues
+  A large array cannot be allocated on the heap (see [[https://stackoverflow.com/questions/43015080/creating-large-arrays-in-c][here]]) this means
+  that large arrays need to be declared outside of main or as
+  static. static arrays cannot be given a variable size ([[https://stackoverflow.com/questions/10675399/why-cant-the-size-of-a-static-array-be-made-variable][see here]]) so
+  this means we simply need to decide in advance the upper limit of
+  files that will be tolerated.
+
+  

@@ -16,6 +16,7 @@
        // I could then take that TF, multiply through the IDF and then that would be
        // NOTE This is absolutely necessary
 // TODO make sure that the DTM TFIDF stuff is using floats to reduce memory usage
+// TODO Why does it crash if VECSIZE is made larger
 // the TFIDF
 /* * Includes */
 // For String Comparison
@@ -41,7 +42,7 @@
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
 #define VECSIZE                                                                \
-  (30 * 10) // 150^3 is SLOW, 3-tuple 100 sloewr
+  (30 * 100) // 150^3 is SLOW, 3-tuple 100 sloewr
               // than 2-tuple
 // #define VECSIZE (2*128*128)
 #define NR 10 * 1000 // The number of Columns of the DTM, i.e. max no. of files
@@ -139,7 +140,7 @@ int main(int argc, char *argv[]) {
 
   /* *** Calculate the similarity scores */
   float sim_score[fc];
-  similarity(DTM, sim_score);
+  similarity(TFIDF, sim_score);
 
   /* /\* *** Calculate the similarity *\/ */
   /* float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE); */
