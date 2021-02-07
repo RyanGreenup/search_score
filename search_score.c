@@ -68,7 +68,7 @@ float arr_sum(float arr[], int arr_size);
 void fill_array(float arr[], int n);
 // TODO this (arrays) should use ints until it needs to become a float, it's
 // easier to code just for floats at the moment though
-void read_file(char *filename, float *count_array);
+void read_file(char *filename, float DTM[NR][NC], int row);
 void norm1_scale(float *source_array, float *target_array);
 float euclidean_length(float *source_array, int N);
 void read_query(char *term, float DTM[NR][NC]);
@@ -115,12 +115,8 @@ for (int i = 0; i < fc; ++i) {        // Don't loop over all the array elements,
   /* *** Add the Files to the DTM */
  for (int i = 0; i < fc; i++) {
     /* **** Fill Arrays with Occurrence of Strings */
-    read_file(file_list[i], doc_vec); /* First argument is file */
+   read_file(file_list[i], DTM, i); /* First argument is file */
 
-    /* **** Copy the Document Vector into the DTM */ // TODO this is slow
-    for (int j = 0; j < NC; j++) {
-      DTM[i][j] = doc_vec[j];
-    }
     for (int j = 0; j < 9; j++) {
 	printf("%f\t", DTM[i][j]);
     }
@@ -143,7 +139,7 @@ for (int i = 0; i < fc; ++i) {        // Don't loop over all the array elements,
 /* * Sub-Functions */
 /* ** Read Arguments */
 /* *** Read in First Argument (File Contents) */
-void read_file(char *filename, float *count_array) {
+void read_file(char *filename, float DTM[NR][NC], int row) {
   int i = 0;
   while (filename[i] != '\0') {
     i++;
@@ -169,7 +165,7 @@ void read_file(char *filename, float *count_array) {
       /* printf("\n%c", (char_1*char_2*char_3));  /\* Cat the File *\/ */
       int index =
           (cantor_pairing(cantor_pairing(char_1, char_2), char_3) % VECSIZE);
-      count_array[index] += 1;
+      DTM[row][index] += 1;
     }
   }
   fclose(fp);
