@@ -105,7 +105,8 @@ void colSum(float source[NR][NC], float *destination);
 void num_above_average(float DTM[NR][NC], float *destination);
 
 /* * Main */
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 
   char *extensions[3];
   extensions[0] = ".md";
@@ -114,21 +115,25 @@ int main(int argc, char *argv[]) {
 
   char *query_string = argv[2];
   listFilesRecursively(argv[1], extensions, query_string);
-  if ((fc + 1) >= NR) {
+  if ((fc + 1) >= NR)
+  {
     printf("More Files than currently allowed, to increase"
            "this limit modify the NR value around the Top of the source");
     return 1;
-  } else if (DEBUG) {
+  }
+  else if (DEBUG)
+  {
     printf("\n\n%i, different files detected\n", fc);
   }
 
   /* ** Fill the DTM */
-  /* *** Zero the DTM */ // TODO this should be done as necessary, adds 1 ms
-                         /* *** Add the Query to row 0 of DTM */
+  /* *** Zero the DTM */         // TODO this should be done as necessary, adds 1 ms
+                                 /* *** Add the Query to row 0 of DTM */
   read_query(query_string, DTM); /* Second argument is query term */
 
   /* *** Add the Files to the DTM */
-  for (int i = 1; i < fc; i++) { //NOTE remember that the first row is the query
+  for (int i = 1; i < fc; i++)
+  { //NOTE remember that the first row is the query
     /* **** Fill Arrays with Occurrence of Strings */
     read_file(file_list[i], DTM, i); /* First argument is file */
   }
@@ -142,7 +147,8 @@ int main(int argc, char *argv[]) {
 
   /* /\* *** Calculate the similarity *\/ */
   /* float sim_score = similarity(doc_vec_scaled, query_vec_scaled, VECSIZE); */
-  for (int i = 1; i < fc; i++) { // NOTE remember the first row of DTM is query
+  for (int i = 1; i < fc; i++)
+  { // NOTE remember the first row of DTM is query
     printf("%f\t%s\n", sim_score[i], file_list[i]);
   }
 
@@ -152,28 +158,36 @@ int main(int argc, char *argv[]) {
 /* * Sub-Functions */
 /* ** Read Arguments */
 /* *** Read in First Argument (File Contents) */
-void read_file(char *filename, float DTM[NR][NC], int row) {
+void read_file(char *filename, float DTM[NR][NC], int row)
+{
   int i = 0;
-  while (filename[i] != '\0') {
+  while (filename[i] != '\0')
+  {
     i++;
   }
 
   FILE *fp = fopen(filename, "r");
   int c; // declare c as int so it can store '\0'
-  if (fp == NULL) {
+  if (fp == NULL)
+  {
     perror("Error Opening File");
-  } else {
+  }
+  else
+  {
     int char_1 = 32; // NOTE Treat first char as space
     int char_2 = 32;
     int char_3 = 32;
     // Zero the DTM
-    for (int j = 0; j < NC; ++j) {
+    for (int j = 0; j < NC; ++j)
+    {
       DTM[row][j] = 0;
     }
     // Go over the characters
-    while ((c = tolower(fgetc(fp))) != EOF) {
+    while ((c = tolower(fgetc(fp))) != EOF)
+    {
       // Replace tabs and whitespaces
-      if (c == 10 || c == 13 || c == 78 || c == 9) {
+      if (c == 10 || c == 13 || c == 78 || c == 9)
+      {
         /* c = 32; */
         continue;
       }
@@ -184,7 +198,8 @@ void read_file(char *filename, float DTM[NR][NC], int row) {
       int index =
           (cantor_pairing(cantor_pairing(char_1, char_2), char_3) % VECSIZE);
       DTM[row][index] += 1;
-      if (index > tc) {
+      if (index > tc)
+      {
         tc = index;
       }
     }
@@ -192,19 +207,23 @@ void read_file(char *filename, float DTM[NR][NC], int row) {
   fclose(fp);
 }
 /* *** Read Second Argument (search Query) */
-void read_query(char *term, float DTM[NR][NC]) {
+void read_query(char *term, float DTM[NR][NC])
+{
   int rownum = 0;  // the row of the DTM to put the query into
   int i = 0;       /* This will become the length of the Query */
   int char_1 = 32; // NOTE Treat first char as space
   int char_2 = 32;
   int char_3 = 32;
   int c; // declare c as int so it can store '\0'
-  for (int j = 0; j < NC; j++) {
+  for (int j = 0; j < NC; j++)
+  {
     DTM[rownum][j] = 0;
   }
-  while ((c = term[i]) != '\0') {
+  while ((c = term[i]) != '\0')
+  {
     // Replace tabs and whitespaces
-    if (c == 10 || c == 13 || c == 78 || c == 9) {
+    if (c == 10 || c == 13 || c == 78 || c == 9)
+    {
       /* c = 32; */
       continue;
     }
@@ -228,54 +247,66 @@ void read_query(char *term, float DTM[NR][NC]) {
 
 /* ** Cosine Similarity */
 
-void similarity(float DTM[NR][NC], float sim_score[fc]) {
-  for (int i = 1; i < fc; i++) { // NOTE Remember row 0 is the query
+void similarity(float DTM[NR][NC], float sim_score[fc])
+{
+  for (int i = 1; i < fc; i++)
+  { // NOTE Remember row 0 is the query
     float dot_val = 0;
     float u_dist2 = 0;
     float v_dist2 = 0;
-    for (int j = 0; j < tc; ++j) {
-	float u_val = TFIDF[i][j];
-	float v_val = TFIDF[0][j];
-	dot_val += u_val * v_val;
-	u_dist2 += u_val * u_val;
-	v_dist2 += v_val * v_val;
+    for (int j = 0; j < tc; ++j)
+    {
+      float u_val = TFIDF[i][j];
+      float v_val = TFIDF[0][j];
+      dot_val += u_val * v_val;
+      u_dist2 += u_val * u_val;
+      v_dist2 += v_val * v_val;
     }
-  sim_score[i] = dot_val / (sqrt(u_dist2 * v_dist2));
+    sim_score[i] = dot_val / (sqrt(u_dist2 * v_dist2));
   }
 }
 
 /* ** Scale to 1 */
-void norm1_scale(float *source_array, float *target_array) {
+void norm1_scale(float *source_array, float *target_array)
+{
   float sum_array = arr_sum(source_array, VECSIZE);
-  for (int i = 0; i < VECSIZE; ++i) {
+  for (int i = 0; i < VECSIZE; ++i)
+  {
     target_array[i] = source_array[i] / sum_array;
   }
 }
 /* ** Euclidean Length (Mod||) */
 /* TODO should take a parameter for vector length */
-float euclidean_length(float *source_array, int N) {
+float euclidean_length(float *source_array, int N)
+{
   float SS = 0;
-  for (int i = 0; i < N; ++i) {
+  for (int i = 0; i < N; ++i)
+  {
     SS += (source_array[i] * source_array[i]);
   }
   return sqrtf(SS);
 }
 
 /* ** Fill array with 0 */
-void fill_array(float arr[], int n) {
+void fill_array(float arr[], int n)
+{
   int i;
-  for (i = 0; i < n; ++i) {
+  for (i = 0; i < n; ++i)
+  {
     float x = 0;
     arr[i] = x;
   }
 }
 
 /* ** Sum array */
-float arr_sum(float arr[], int arr_size) {
+float arr_sum(float arr[], int arr_size)
+{
   float running_sum = 0; /* Running tally */
   int i;                 /* counting */
-  for (i = 0; i < arr_size; ++i) {
-    if (arr[i] != 0) {
+  for (i = 0; i < arr_size; ++i)
+  {
+    if (arr[i] != 0)
+    {
       running_sum += arr[i];
     }
   }
@@ -283,18 +314,22 @@ float arr_sum(float arr[], int arr_size) {
 }
 
 /* ** Cantor Pairing Function */
-unsigned int cantor_pairing(int a, int b) {
+unsigned int cantor_pairing(int a, int b)
+{
   return b + (a + b) * (a + b + 1) / 2;
 }
 
 /* ** List Files in Directories */
 /* *** Print if Extension match */
 /* *** Check Extension */
-void print_if_ext(char *filename, char *extensions[], char *query_string) {
+void print_if_ext(char *filename, char *extensions[], char *query_string)
+{
 
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 3; ++i)
+  {
     char *ptr = strstr(filename, extensions[i]);
-    if (ptr != NULL) {
+    if (ptr != NULL)
+    {
       file_list[fc] = (char *)malloc(strlen(filename) + 1);
       /* file_list[fc] = filename; */
       strncpy(file_list[fc], filename,
@@ -316,7 +351,8 @@ void print_if_ext(char *filename, char *extensions[], char *query_string) {
  *  https://codeforwin.org/2018/03/c-program-to-list-all-files-in-a-directory-recursively.html
  */
 void listFilesRecursively(char *basePath, char *extensions[],
-                          char *query_string) {
+                          char *query_string)
+{
   char path[1000];
   struct dirent *dp;
   DIR *dir = opendir(basePath);
@@ -325,8 +361,10 @@ void listFilesRecursively(char *basePath, char *extensions[],
   if (!dir)
     return;
 
-  while ((dp = readdir(dir)) != NULL) {
-    if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) {
+  while ((dp = readdir(dir)) != NULL)
+  {
+    if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
+    {
 
       // Construct new path from our base path
       strcpy(path, basePath);
@@ -345,16 +383,20 @@ void listFilesRecursively(char *basePath, char *extensions[],
 }
 /* ** DTM */
 /* *** DTM to IDF */
-void DTM_to_TFIDF(float DTM[NR][NC], float TFIDF[NR][NC]) {
+void DTM_to_TFIDF(float DTM[NR][NC], float TFIDF[NR][NC])
+{
   DTM_to_TF(DTM, TF);
   DTM_to_IDF(DTM, IDF);
   float rowsums[fc];
-  for (int i = 0; i < fc; i++) {
+  for (int i = 0; i < fc; i++)
+  {
     rowsums[i] = 0;
   }
 
-  for (int i = 0; i < fc; i++) {
-    for (int j = 0; j < tc; j++) {
+  for (int i = 0; i < fc; i++)
+  {
+    for (int j = 0; j < tc; j++)
+    {
       float tf_val = TF[i][j];
       float idf_val = IDF[j];
       TFIDF[i][j] = (tf_val * idf_val);
@@ -363,19 +405,25 @@ void DTM_to_TFIDF(float DTM[NR][NC], float TFIDF[NR][NC]) {
     printf("\n");
   }
   // Scale the TFIDF row wise for Cosine similarity
-  for (int i = 0; i < fc; i++) {
-    for (int j = 0; j < tc; j++) {
-      if (rowsums[i] != 0) {
-        TFIDF[i][j] = TFIDF[i][j]/rowsums[i];
+  for (int i = 0; i < fc; i++)
+  {
+    for (int j = 0; j < tc; j++)
+    {
+      if (rowsums[i] != 0)
+      {
+        TFIDF[i][j] = TFIDF[i][j] / rowsums[i];
       }
     }
   }
 }
 
 /* **** DTM To TF */
-void DTM_to_TF(float DTM[NR][NC], float TF[NR][NC]) {
-  for (int i = 0; i < fc; i++) {
-    for (int j = 0; j < NC; j++) {
+void DTM_to_TF(float DTM[NR][NC], float TF[NR][NC])
+{
+  for (int i = 0; i < fc; i++)
+  {
+    for (int j = 0; j < NC; j++)
+    {
       TF[i][j] = logf(DTM[i][j] + 1);
     }
   }
@@ -383,20 +431,21 @@ void DTM_to_TF(float DTM[NR][NC], float TF[NR][NC]) {
 
 /* **** DTM to IDF */
 
-void DTM_to_IDF(float DTM[NR][NC], float IDF[NC]) {
+void DTM_to_IDF(float DTM[NR][NC], float IDF[NC])
+{
   float colsums[NC];
   colSum(DTM, colsums);
   float ft[NC];
   num_above_average(DTM, ft);
 
-
-    // In typical TFIDF, ft can't be zero otherwise the term wouldn't be in
-    // the DTM to begine with, that isn't the case here because we created the
-    // array and then filled it out using the ascii characters to choose the columns.
-    // this means that it shouldn't matter if these aren't changed because they won't
-    // affect the actual outcome, dividing by zero and introducing nans will however
-    //  break dividing by the rowsums.
-  for (int j = 0; j < tc; j++) {
+  // In typical TFIDF, ft can't be zero otherwise the term wouldn't be in
+  // the DTM to begine with, that isn't the case here because we created the
+  // array and then filled it out using the ascii characters to choose the columns.
+  // this means that it shouldn't matter if these aren't changed because they won't
+  // affect the actual outcome, dividing by zero and introducing nans will however
+  //  break dividing by the rowsums.
+  for (int j = 0; j < tc; j++)
+  {
     if (ft[j] > 0)
     {
       IDF[j] = (fc / ft[j]);
@@ -406,37 +455,45 @@ void DTM_to_IDF(float DTM[NR][NC], float IDF[NC]) {
 
 /* **** Helpers */
 
-void colSum(float source[NR][NC], float *destination) {
+void colSum(float source[NR][NC], float *destination)
+{
   float running_sum = 0;
 
-  for (int j = 0; j < NC; j++) {
+  for (int j = 0; j < NC; j++)
+  {
     running_sum = 0;
-    for (int i = 0; i < NR; i++) {
+    for (int i = 0; i < NR; i++)
+    {
       running_sum += source[i][j];
     }
     destination[j] = running_sum;
   }
 }
 
-void num_above_average(float DTM[NR][NC], float *destination) {
+void num_above_average(float DTM[NR][NC], float *destination)
+{
   float running_sum = 0;
   int i = 0; // rows or documents, smallish
-  int j = 0; // columns or terms, Very large 
+  int j = 0; // columns or terms, Very large
 
-  for (j = 0; j < tc; j++) {
+  for (j = 0; j < tc; j++)
+  {
     running_sum = 0;
     // Calculate the average of the column
-    for (i = 0; i < fc; i++) {
+    for (i = 0; i < fc; i++)
+    {
       running_sum += DTM[i][j];
     }
-    float average = running_sum/fc;
+    float average = running_sum / fc;
     // Count the number above the average
     // Nope for now do the number not zero
     int ft = 0;
-    for (i = 0; i < fc; i++) {
-      /* if (DTM[i][j] > average) { */
-      if (DTM[i][j] > 0) {
-	ft++;
+    for (i = 0; i < fc; i++)
+    {
+      // if (DTM[i][j] > average) {
+      if (DTM[i][j] > 0)
+      {
+        ft++;
       }
     }
     destination[j] = ft;
