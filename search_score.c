@@ -42,8 +42,9 @@
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
 #define VECSIZE                                                                \
-  (30 * 1000) // 150^3 is SLOW, 3-tuple 100 sloewr
+  (20 * 1000) // 150^3 is SLOW, 3-tuple 100 sloewr
               // than 2-tuple
+              // for 3-tuple Mean=20K, SD= 8Kish
 // #define VECSIZE (2*128*128)
 #define NR 10 * 1000 // The number of Columns of the DTM, i.e. max no. of files
 #define NC                                                                     \
@@ -388,8 +389,18 @@ void DTM_to_IDF(float DTM[NR][NC], float IDF[NC]) {
   float ft[NC];
   num_above_average(DTM, ft);
 
+
+    // In typical TFIDF, ft can't be zero otherwise the term wouldn't be in
+    // the DTM to begine with, that isn't the case here because we created the
+    // array and then filled it out using the ascii characters to choose the columns.
+    // this means that it shouldn't matter if these aren't changed because they won't
+    // affect the actual outcome, dividing by zero and introducing nans will however
+    //  break dividing by the rowsums.
   for (int j = 0; j < tc; j++) {
-    IDF[j] = (fc / ft[j]);
+    if (ft[j] > 0)
+    {
+      IDF[j] = (fc / ft[j]);
+    }
   }
 }
 
