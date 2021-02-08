@@ -42,7 +42,7 @@
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
 #define VECSIZE                                                                \
-  (30 * 100) // 150^3 is SLOW, 3-tuple 100 sloewr
+  (30 * 1000) // 150^3 is SLOW, 3-tuple 100 sloewr
               // than 2-tuple
 // #define VECSIZE (2*128*128)
 #define NR 10 * 1000 // The number of Columns of the DTM, i.e. max no. of files
@@ -388,7 +388,7 @@ void DTM_to_IDF(float DTM[NR][NC], float IDF[NC]) {
   float ft[NC];
   num_above_average(DTM, ft);
 
-  for (int j = 0; j < NC; j++) {
+  for (int j = 0; j < tc; j++) {
     IDF[j] = (fc / ft[j]);
   }
 }
@@ -412,17 +412,17 @@ void num_above_average(float DTM[NR][NC], float *destination) {
   int i = 0; // rows or documents, smallish
   int j = 0; // columns or terms, Very large 
 
-  for (j = 0; j < NC; j++) {
+  for (j = 0; j < tc; j++) {
     running_sum = 0;
     // Calculate the average of the column
-    for (i = 0; i < NR; i++) {
+    for (i = 0; i < fc; i++) {
       running_sum += DTM[i][j];
     }
-    float average = running_sum/NR;
+    float average = running_sum/fc;
     // Count the number above the average
     // Nope for now do the number not zero
     int ft = 0;
-    for (i = 0; i < NR; i++) {
+    for (i = 0; i < fc; i++) {
       /* if (DTM[i][j] > average) { */
       if (DTM[i][j] > 0) {
 	ft++;
