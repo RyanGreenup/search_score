@@ -42,7 +42,7 @@
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
 #define VECSIZE                                                                \
-  (20 * 1000) // 150^3 is SLOW, 3-tuple 100 sloewr
+  (2 * 1000) // 150^3 is SLOW, 3-tuple 100 sloewr
               // than 2-tuple
               // for 3-tuple Mean=20K, SD= 8Kish
 // #define VECSIZE (2*128*128)
@@ -177,11 +177,7 @@ void read_file(char *filename, float DTM[NR][NC], int row)
     int char_1 = 32; // NOTE Treat first char as space
     int char_2 = 32;
     int char_3 = 32;
-    // Zero the DTM
-    for (int j = 0; j < NC; ++j)
-    {
-      DTM[row][j] = 0;
-    }
+    // don't Zero the DTM, global array guaranteed to be 0.
     // Go over the characters
     while ((c = tolower(fgetc(fp))) != EOF)
     {
