@@ -42,7 +42,7 @@
 // faster anyway. (binom(128, 3)<500E3) choose 3)<500E3
 
 #define VECSIZE                                                                \
-  (2 * 1000) // 150^3 is SLOW, 3-tuple 100 sloewr
+  (5 * 1000) // 150^3 is SLOW, 3-tuple 100 sloewr
               // than 2-tuple
               // for 3-tuple Mean=20K, SD= 8Kish
 // #define VECSIZE (2*128*128)
@@ -176,7 +176,6 @@ void read_file(char *filename, float DTM[NR][NC], int row)
   {
     int char_1 = 32; // NOTE Treat first char as space
     int char_2 = 32;
-    int char_3 = 32;
     // don't Zero the DTM, global array guaranteed to be 0.
     // Go over the characters
     while ((c = tolower(fgetc(fp))) != EOF)
@@ -188,11 +187,10 @@ void read_file(char *filename, float DTM[NR][NC], int row)
         continue;
       }
       char_1 = char_2;
-      char_2 = char_3;
-      char_3 = c;
+      char_2 = c;
       /* printf("\n%c", (char_1*char_2*char_3));  /\* Cat the File *\/ */
       int index =
-          (cantor_pairing(cantor_pairing(char_1, char_2), char_3) % VECSIZE);
+          (cantor_pairing(char_1, char_2) % VECSIZE);
       DTM[row][index] += 1;
       if (index > tc)
       {
@@ -209,7 +207,6 @@ void read_query(char *term, float DTM[NR][NC])
   int i = 0;       /* This will become the length of the Query */
   int char_1 = 32; // NOTE Treat first char as space
   int char_2 = 32;
-  int char_3 = 32;
   int c; // declare c as int so it can store '\0'
   for (int j = 0; j < NC; j++)
   {
@@ -224,20 +221,18 @@ void read_query(char *term, float DTM[NR][NC])
       continue;
     }
     char_1 = char_2;
-    char_2 = char_3;
-    char_3 = c;
+    char_2 = c;
     int index =
-        (cantor_pairing(cantor_pairing(char_1, char_2), char_3) % VECSIZE);
+        (cantor_pairing(char_1, char_2) % VECSIZE);
     DTM[rownum][index] += 1;
     i++; // TODO why isn't it getting the last one.
   }
   // Files have a trailing LineFeed (10) strings don't so make
   // sure to count one on the string for accuracy.
   char_1 = char_2;
-  char_2 = char_3;
-  char_3 = 32; // should be 10 LF, but I swapped LF for SPC above
+  char_2 = 32; // should be 10 LF, but I swapped LF for SPC above
   int index =
-      (cantor_pairing(cantor_pairing(char_1, char_2), char_3) % VECSIZE);
+      (cantor_pairing(char_1, char_2) % VECSIZE);
   DTM[rownum][index] += 1;
 }
 
